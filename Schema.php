@@ -12,11 +12,12 @@ namespace edgardmessias\db\informix;
  * @author Edgard Messias <edgardmessias@gmail.com>
  * @since 1.0
  */
-class Connection extends \yii\db\Connection
+class Schema extends \yii\db\Schema
 {
 
-    public $schemaMap = [
-        'informix'   => 'edgardmessias\db\informix\Schema', // Informix
-    ];
+    protected function loadTableSchema($name) 
+    {
+        
+    }
 
 }

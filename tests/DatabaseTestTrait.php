@@ -5,11 +5,13 @@ namespace edgardmessias\unit\db\informix;
 /**
  * @group sphinx
  */
-trait DatabaseTestTrait {
+trait DatabaseTestTrait
+{
 
-    public function setUp() {
+    public function setUp() 
+    {
         if (self::$params === null) {
-            self::$params = require(__DIR__ . '/data/config.php');
+            self::$params = include __DIR__ . '/data/config.php';
         }
 
         parent::setUp();

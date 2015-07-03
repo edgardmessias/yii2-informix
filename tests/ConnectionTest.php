@@ -5,7 +5,8 @@ namespace edgardmessias\unit\db\informix;
 /**
  * @group sphinx
  */
-class ConnectionTest extends \yiiunit\framework\db\ConnectionTest {
+class ConnectionTest extends \yiiunit\framework\db\ConnectionTest
+{
     
     use DatabaseTestTrait;
 
