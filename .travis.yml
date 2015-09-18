@@ -1,0 +1,29 @@
+language: php
+
+php:
+  - 5.4
+
+sudo: true
+
+before_install:
+  - sudo apt-get update -qq 
+  - sudo apt-get install aria2 curl -y
+  - DOWNLOAD_LINK=$(curl --url https://raw.githubusercontent.com/wiki/edgardmessias/informix-travis/informix-link-server.md -s | tail -1) ; echo ${DOWNLOAD_LINK} ; aria2c -x 16 ${DOWNLOAD_LINK} ; ls -l
+  - DOWNLOAD_FILE=$(ls iif*.tar)
+  - sudo chmod +x ./tests/ci/travis/*.sh
+  - sudo ./tests/ci/travis/informix_install.sh ${DOWNLOAD_FILE}
+  - sudo ./tests/ci/travis/informix_start.sh
+  - export INFORMIXDIR=/opt/IBM/informix
+  - git clone https://git.php.net/repository/pecl/database/pdo_informix.git
+  - (cd pdo_informix/; phpize && ./configure --with-pdo-informix=${INFORMIXDIR} && make && sudo make install)
+
+install:
+  - echo "extension=pdo_informix.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - php -m | grep -i pdo
+  - travis_retry composer self-update && composer --version
+  - travis_retry composer global require "fxp/composer-asset-plugin:~1.0.0" --prefer-dist --no-interaction
+  - export PATH="$HOME/.composer/vendor/bin:$PATH"
+  - travis_retry composer install --prefer-dist --no-interaction
+
+script:
+  - phpunit
