@@ -467,18 +467,4 @@ EOD;
             }
         }
     }
-    
-    /**
-     * Sets the isolation level of the current transaction.
-     * @param string $level The transaction isolation level to use for this transaction.
-     * This can be one of [[Transaction::READ_UNCOMMITTED]], [[Transaction::READ_COMMITTED]], [[Transaction::REPEATABLE_READ]]
-     * and [[Transaction::SERIALIZABLE]] but also a string containing DBMS specific syntax to be used
-     * after `SET TRANSACTION READ WRITE, ISOLATION LEVEL`.
-     * @see http://en.wikipedia.org/wiki/Isolation_%28database_systems%29#Isolation_levels
-     * @see http://www-01.ibm.com/support/knowledgecenter/SSGU8G_12.1.0/com.ibm.sqls.doc/ids_sqs_1200.htm?lang=pt-br
-     */
-    public function setTransactionIsolationLevel($level)
-    {
-        $this->db->createCommand("SET TRANSACTION READ WRITE, ISOLATION LEVEL $level;")->execute();
-    }
 }

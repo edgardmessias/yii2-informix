@@ -2,6 +2,9 @@
 
 namespace edgardmessias\unit\db\informix;
 
+use yii\db\Connection;
+use yii\db\Transaction;
+
 /**
  * @group sphinx
  */
@@ -35,5 +38,23 @@ class ConnectionTest extends \yiiunit\framework\db\ConnectionTest
         $this->assertEquals('[[column]]', $connection->quoteColumnName('[[column]]'));
         $this->assertEquals('{{column}}', $connection->quoteColumnName('{{column}}'));
         $this->assertEquals('(column)', $connection->quoteColumnName('(column)'));
+    }
+    
+    /**
+     * @depends testTransactionShortcutCorrect
+     */
+    public function testTransactionShortcutCustom()
+    {
+        $connection = $this->getConnection(true);
+
+        $result = $connection->transaction(function (Connection $db) {
+            $db->createCommand()->insert('profile', ['description' => 'test transaction shortcut'])->execute();
+            return true;
+        }, Transaction::READ_COMMITTED);
+
+        $this->assertTrue($result, 'transaction shortcut valid value should be returned from callback');
+
+        $profilesCount = $connection->createCommand("SELECT COUNT(*) FROM profile WHERE description = 'test transaction shortcut';")->queryScalar();
+        $this->assertEquals(1, $profilesCount, 'profile should be inserted in transaction shortcut');
     }
 }
