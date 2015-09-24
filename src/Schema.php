@@ -83,8 +83,7 @@ class Schema extends \yii\db\Schema
      */
     protected function findColumns($table)
     {
-//        return true;
-        $sql = <<<EOD
+        $sql = <<<SQL
 SELECT syscolumns.colname,
        syscolumns.colmin,
        syscolumns.colmax,
@@ -98,14 +97,21 @@ FROM systables
   INNER JOIN syscolumns ON syscolumns.tabid = systables.tabid
   LEFT JOIN sysdefaults ON sysdefaults.tabid = syscolumns.tabid AND sysdefaults.colno = syscolumns.colno
 WHERE systables.tabid >= 100
-AND   systables.tabname = :table
+AND   systables.tabname = :tableName
 ORDER BY syscolumns.colno
-EOD;
-        $command = $this->db->createCommand($sql);
-        $command->bindValue(':table', $table->name);
-        if (($columns = $command->queryAll()) === []) {
+SQL;
+
+        try {
+            $columns = $this->db->createCommand($sql, [
+                ':tableName' => $table->name,
+            ])->queryAll();
+        } catch (\Exception $e) {
             return false;
         }
+        if (empty($columns)) {
+            return false;
+        }
+
         $columnsTypes = [
             0  => 'CHAR',
             1  => 'SMALLINT',
@@ -139,6 +145,9 @@ EOD;
             53 => 'BIGINT',
         ];
         foreach ($columns as $column) {
+            if ($this->db->slavePdo->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
+                $column = array_change_key_case($column, CASE_LOWER);
+            }
             $coltypebase = (int) $column['coltype'];
             $coltypereal = $coltypebase % 256;
             if (array_key_exists($coltypereal, $columnsTypes)) {
@@ -245,7 +254,7 @@ EOD;
                     //Literal value
                     break;
             }
-            $c = $this->loadColumnSchema($column);
+            $c = $this->createColumn($column);
             $table->columns[$c->name] = $c;
         }
         return true;
@@ -257,7 +266,7 @@ EOD;
      * @param array $column column metadata
      * @return ColumnSchema normalized column metadata
      */
-    protected function loadColumnSchema($column)
+    protected function createColumn($column)
     {
         $c = $this->createColumnSchema();
         $c->name = $column['colname'];
@@ -281,10 +290,13 @@ EOD;
             return $this->tabids[$tabid];
         }
         $qry = "SELECT colno, TRIM(colname) as colname FROM syscolumns where tabid = :tabid ORDER BY colno ";
-        $command = $this->db->createCommand($qry);
-        $command->bindValue(':tabid', $tabid);
+        $command = $this->db->createCommand($qry, [':tabid' => $tabid]);
+        
         $columns = [];
         foreach ($command->queryAll() as $row) {
+            if ($this->db->slavePdo->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
+                $row = array_change_key_case($row, CASE_LOWER);
+            }
             $columns[$row['colno']] = $row['colname'];
         }
         $this->tabids[$tabid] = $columns;
@@ -303,9 +315,12 @@ FROM systables
   INNER JOIN sysconstraints ON sysconstraints.tabid = systables.tabid
 WHERE systables.tabname = :table;
 EOD;
-        $command = $this->db->createCommand($sql);
-        $command->bindValue(':table', $table->name);
+        $command = $this->db->createCommand($sql, [':table' => $table->name]);
+
         foreach ($command->queryAll() as $row) {
+            if ($this->db->slavePdo->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
+                $row = array_change_key_case($row, CASE_LOWER);
+            }
             if ($row['constrtype'] === 'P') { // primary key
                 $this->findPrimaryKey($table, $row['idxname']);
             } elseif ($row['constrtype'] === 'R') { // foreign key
@@ -342,9 +357,13 @@ SELECT tabid,
 FROM sysindexes
 WHERE idxname = :indice;
 EOD;
-        $command = $this->db->createCommand($sql);
-        $command->bindValue(":indice", $indice);
+
+        $command = $this->db->createCommand($sql, [':indice' => $indice]);
         foreach ($command->queryAll() as $row) {
+            if ($this->db->slavePdo->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
+                $row = array_change_key_case($row, CASE_LOWER);
+            }
+
             $columns = $this->getColumnsNumber($row['tabid']);
             for ($x = 1; $x < 16; $x++) {
                 $colno = (isset($row["part{$x}"])) ? abs($row["part{$x}"]) : 0;
@@ -425,9 +444,13 @@ FROM sysindexes
   INNER JOIN sysindexes AS sif ON sif.idxname = scf.idxname
 WHERE sysindexes.idxname = :indice;
 EOD;
-        $command = $this->db->createCommand($sql);
-        $command->bindValue(":indice", $indice);
+
+        $command = $this->db->createCommand($sql, [':indice' => $indice]);
         foreach ($command->queryAll() as $row) {
+            if ($this->db->slavePdo->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
+                $row = array_change_key_case($row, CASE_LOWER);
+            }
+
             $columnsbase = $this->getColumnsNumber($row['basetabid']);
             $columnsrefer = $this->getColumnsNumber($row['reftabid']);
             for ($x = 1; $x < 16; $x++) {
