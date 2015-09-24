@@ -19,7 +19,7 @@ class Schema extends \yii\db\Schema
 
     /**
      * Resolves the table name and schema name (if any).
-     * @param TableSchema $table the table metadata object
+     * @param \yii\db\TableSchema $table the table metadata object
      * @param string $name the table name
      */
     protected function resolveTableNames($table, $name)
@@ -67,7 +67,7 @@ class Schema extends \yii\db\Schema
      */
     protected function loadTableSchema($name)
     {
-        $table = new \yii\db\TableSchema;
+        $table = new \yii\db\TableSchema();
         $this->resolveTableNames($table, $name);
         if (!$this->findColumns($table)) {
             return null;
@@ -80,7 +80,7 @@ class Schema extends \yii\db\Schema
     /**
      * Collects the table column metadata.
      *
-     * @param TableSchema $table the table metadata
+     * @param \yii\db\TableSchema $table the table metadata
      * @return boolean whether the table exists in the database
      */
     protected function findColumns($table)
@@ -266,7 +266,7 @@ SQL;
      * Creates a table column.
      *
      * @param array $column column metadata
-     * @return ColumnSchema normalized column metadata
+     * @return \yii\db\ColumnSchema normalized column metadata
      */
     protected function createColumn($column)
     {
@@ -307,7 +307,7 @@ SQL;
 
     /**
      * Collects the primary and foreign key column details for the given table.
-     * @param CInformixTableSchema $table the table metadata
+     * @param \yii\db\TableSchema $table the table metadata
      */
     protected function findConstraints($table)
     {
@@ -333,7 +333,7 @@ EOD;
 
     /**
      * Collects primary key information.
-     * @param CInformixTableSchema $table the table metadata
+     * @param \yii\db\TableSchema $table the table metadata
      * @param string $indice Informix primary key index name
      */
     protected function findPrimaryKey($table, $indice)
@@ -375,20 +375,14 @@ EOD;
                 $colname = $columns[$colno];
                 if (isset($table->columns[$colname])) {
                     $table->columns[$colname]->isPrimaryKey = true;
-                    if ($table->primaryKey === null) {
-                        $table->primaryKey = $colname;
-                    } elseif (is_string($table->primaryKey))
-                        $table->primaryKey = [$table->primaryKey, $colname];
-                    else {
-                        $table->primaryKey[] = $colname;
-                    }
+                    $table->primaryKey[] = $colname;
                 }
             }
         }
-        /* @var $c CInformixColumnSchema */
+        /* @var $c \yii\db\ColumnSchema */
         foreach ($table->columns as $c) {
             if ($c->autoIncrement && $c->isPrimaryKey) {
-                $table->sequenceName = $c->rawName;
+                $table->sequenceName = $c->name;
                 break;
             }
         }
@@ -396,7 +390,7 @@ EOD;
 
     /**
      * Collects foreign key information.
-     * @param CInformixTableSchema $table the table metadata
+     * @param \yii\db\TableSchema $table the table metadata
      * @param string $indice Informix foreign key index name
      */
     protected function findForeignKey($table, $indice)
