@@ -21,14 +21,10 @@ class Connection extends \yii\db\Connection
         'informix'   => 'edgardmessias\db\informix\Schema', // Informix
     ];
     
-//    protected function createPdoInstance() {
-//        return parent::createPdoInstance();
-//    }
-    
     protected function initConnection()
     {
         if (!isset($this->attributes[PDO::ATTR_CASE])) {
-            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->pdo->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
         }
         
         parent::initConnection();
