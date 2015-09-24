@@ -270,17 +270,17 @@ SQL;
     {
         $c = $this->createColumnSchema();
         $c->name = $column['colname'];
-        $c->rawName = $this->quoteColumnName($c->name);
         $c->allowNull = (boolean) $column['allownull'];
         $c->isPrimaryKey = false;
-        $c->isForeignKey = false;
         $c->autoIncrement = stripos($column['type'], 'serial') !== false;
         if (preg_match('/(char|numeric|decimal|money)/i', $column['type'])) {
             $column['type'] .= '(' . $column['collength'] . ')';
         } elseif (preg_match('/(datetime|interval)/i', $column['type'])) {
             $column['type'] .= ' ' . $column['collength'];
         }
-        $c->init($column['type'], $column['defvalue']);
+        
+        $c->dbType = $column['type'];
+        $c->defaultValue = $column['defvalue'];
         return $c;
     }
 
