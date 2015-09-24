@@ -14,6 +14,8 @@ namespace edgardmessias\db\informix;
  */
 class Schema extends \yii\db\Schema
 {
+    
+    private $tabids = [];
 
     /**
      * Resolves the table name and schema name (if any).
