@@ -29,4 +29,14 @@ class Connection extends \yii\db\Connection
         
         parent::initConnection();
     }
+    
+    public function beginTransaction($isolationLevel = null) {
+        $transaction = parent::beginTransaction(null);
+        
+        if($isolationLevel !== null){
+            $transaction->setIsolationLevel($isolationLevel);
+        }
+        
+        return $transaction;
+    }
 }
