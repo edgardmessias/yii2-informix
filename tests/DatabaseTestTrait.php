@@ -8,7 +8,7 @@ namespace edgardmessias\unit\db\informix;
 trait DatabaseTestTrait
 {
 
-    public function setUp() 
+    public function setUp()
     {
         if (self::$params === null) {
             self::$params = include __DIR__ . '/data/config.php';
@@ -16,5 +16,4 @@ trait DatabaseTestTrait
 
         parent::setUp();
     }
-
 }
