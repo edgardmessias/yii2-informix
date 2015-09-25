@@ -56,6 +56,11 @@ class Schema extends \yii\db\Schema
         'varchar'                 => self::TYPE_STRING,
     ];
 
+    public function createQueryBuilder()
+    {
+        return new QueryBuilder($this->db);
+    }
+    
     /**
      * Resolves the table name and schema name (if any).
      * @param \yii\db\TableSchema $table the table metadata object
@@ -316,9 +321,9 @@ SQL;
         $c->autoIncrement = strpos($type, 'serial') !== false;
         $c->dbType = $type;
         
-        if(isset($this->typeMap[$type])){
+        if (isset($this->typeMap[$type])) {
             $c->type = $this->typeMap[$type];
-        }else{
+        } else {
             $c->type = self::TYPE_STRING;
         }
         
