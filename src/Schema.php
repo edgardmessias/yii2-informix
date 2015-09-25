@@ -15,7 +15,7 @@ namespace edgardmessias\db\informix;
 class Schema extends \yii\db\Schema
 {
     
-    private $tabids = [];
+    private $_tabids = [];
 
     /**
      * Resolves the table name and schema name (if any).
@@ -288,8 +288,8 @@ SQL;
 
     protected function getColumnsNumber($tabid)
     {
-        if (isset($this->tabids[$tabid])) {
-            return $this->tabids[$tabid];
+        if (isset($this->_tabids[$tabid])) {
+            return $this->_tabids[$tabid];
         }
         $qry = "SELECT colno, TRIM(colname) as colname FROM syscolumns where tabid = :tabid ORDER BY colno ";
         $command = $this->db->createCommand($qry, [':tabid' => $tabid]);
@@ -301,7 +301,7 @@ SQL;
             }
             $columns[$row['colno']] = $row['colname'];
         }
-        $this->tabids[$tabid] = $columns;
+        $this->_tabids[$tabid] = $columns;
         return $columns;
     }
 
