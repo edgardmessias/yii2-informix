@@ -14,8 +14,47 @@ namespace edgardmessias\db\informix;
  */
 class Schema extends \yii\db\Schema
 {
-    
+
     private $_tabids = [];
+
+    /**
+     * @var array mapping from physical column types (keys) to abstract column types (values)
+     */
+    public $typeMap = [
+        'bigint'                  => self::TYPE_BIGINT,
+        'bigserial'               => self::TYPE_BIGINT,
+        'binary18'                => self::TYPE_BINARY,
+        'binaryvar'               => self::TYPE_BINARY,
+        'blob'                    => self::TYPE_BINARY,
+        'boolean'                 => self::TYPE_BOOLEAN,
+        'byte'                    => self::TYPE_BINARY,
+        'char'                    => self::TYPE_STRING,
+        'character varying'       => self::TYPE_STRING,
+        'character'               => self::TYPE_STRING,
+        'clob'                    => self::TYPE_TEXT,
+        'date'                    => self::TYPE_DATE,
+        'datetime hour to second' => self::TYPE_TIME,
+        'datetime year to day'    => self::TYPE_DATE,
+        'datetime year to second' => self::TYPE_DATETIME,
+        'dec'                     => self::TYPE_DECIMAL,
+        'decimal'                 => self::TYPE_DECIMAL,
+        'double precision'        => self::TYPE_DOUBLE,
+        'float'                   => self::TYPE_DOUBLE,
+        'int'                     => self::TYPE_INTEGER,
+        'int8'                    => self::TYPE_BIGINT,
+        'integer'                 => self::TYPE_INTEGER,
+        'lvarchar'                => self::TYPE_STRING,
+        'money'                   => self::TYPE_MONEY,
+        'nchar'                   => self::TYPE_STRING,
+        'numeric'                 => self::TYPE_DECIMAL,
+        'nvarchar'                => self::TYPE_STRING,
+        'real'                    => self::TYPE_FLOAT,
+        'serial'                  => self::TYPE_INTEGER,
+        'serial8'                 => self::TYPE_BIGINT,
+        'smallfloat'              => self::TYPE_FLOAT,
+        'smallint'                => self::TYPE_SMALLINT,
+        'varchar'                 => self::TYPE_STRING,
+    ];
 
     /**
      * Resolves the table name and schema name (if any).
@@ -34,7 +73,7 @@ class Schema extends \yii\db\Schema
         }
         $table->fullName = $table->schemaName !== $this->defaultSchema ? $table->schemaName . '.' . $table->name : $table->name;
     }
-    
+
     /**
      * Quotes a simple table name for use in a query.
      * A simple table name should contain the table name only without any schema prefix.
@@ -59,7 +98,6 @@ class Schema extends \yii\db\Schema
         return trim($name, "\"'`");
     }
 
-    
     /**
      * Loads the metadata for the specified table.
      * @param string $name table name
@@ -75,7 +113,6 @@ class Schema extends \yii\db\Schema
         $this->findConstraints($table);
         return $table;
     }
-    
 
     /**
      * Collects the table column metadata.
@@ -105,8 +142,8 @@ SQL;
 
         try {
             $columns = $this->db->createCommand($sql, [
-                ':tableName' => $table->name,
-            ])->queryAll();
+                        ':tableName' => $table->name,
+                    ])->queryAll();
         } catch (\Exception $e) {
             return false;
         }
@@ -274,14 +311,25 @@ SQL;
         $c->name = $column['colname'];
         $c->allowNull = (boolean) $column['allownull'];
         $c->isPrimaryKey = false;
-        $c->autoIncrement = stripos($column['type'], 'serial') !== false;
-        if (preg_match('/(char|numeric|decimal|money)/i', $column['type'])) {
-            $column['type'] .= '(' . $column['collength'] . ')';
-        } elseif (preg_match('/(datetime|interval)/i', $column['type'])) {
-            $column['type'] .= ' ' . $column['collength'];
+        
+        $type = strtolower($column['type']);
+        $c->autoIncrement = strpos($type, 'serial') !== false;
+        $c->dbType = $type;
+        
+        if(isset($this->typeMap[$type])){
+            $c->type = $this->typeMap[$type];
+        }else{
+            $c->type = self::TYPE_STRING;
         }
         
-        $c->dbType = $column['type'];
+        if (preg_match('/(char|numeric|decimal|money)/i', $c->dbType)) {
+            $c->dbType .= '(' . $column['collength'] . ')';
+        } elseif (preg_match('/(datetime|interval)/i', $c->dbType)) {
+            $c->dbType .= ' ' . $column['collength'];
+        }
+        
+        $c->phpType = $this->getColumnPhpType($c);
+
         $c->defaultValue = $column['defvalue'];
         return $c;
     }
@@ -293,7 +341,7 @@ SQL;
         }
         $qry = "SELECT colno, TRIM(colname) as colname FROM syscolumns where tabid = :tabid ORDER BY colno ";
         $command = $this->db->createCommand($qry, [':tabid' => $tabid]);
-        
+
         $columns = [];
         foreach ($command->queryAll() as $row) {
             if ($this->db->slavePdo->getAttribute(\PDO::ATTR_CASE) === \PDO::CASE_UPPER) {
