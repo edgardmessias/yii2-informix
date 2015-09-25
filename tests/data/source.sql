@@ -145,9 +145,6 @@ INSERT INTO animal (type) VALUES ('yiiunit\data\ar\Dog');
 INSERT INTO profile (description) VALUES ('profile customer 1');
 INSERT INTO profile (description) VALUES ('profile customer 3');
 
-INSERT INTO profile (description) VALUES ('profile customer 1');
-INSERT INTO profile (description) VALUES ('profile customer 3');
-
 INSERT INTO customer (email, name, address, status, bool_status, profile_id) VALUES ('user1@example.com', 'user1', 'address1', 1, 't', 1);
 INSERT INTO customer (email, name, address, status, bool_status) VALUES ('user2@example.com', 'user2', 'address2', 1, 't');
 INSERT INTO customer (email, name, address, status, bool_status, profile_id) VALUES ('user3@example.com', 'user3', 'address3', 2, 'f', 2);

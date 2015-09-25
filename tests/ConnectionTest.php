@@ -40,9 +40,6 @@ class ConnectionTest extends \yiiunit\framework\db\ConnectionTest
         $this->assertEquals('(column)', $connection->quoteColumnName('(column)'));
     }
     
-    /**
-     * @depends testTransactionShortcutCorrect
-     */
     public function testTransactionShortcutCustom()
     {
         $connection = $this->getConnection(true);
