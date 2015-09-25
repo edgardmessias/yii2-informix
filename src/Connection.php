@@ -17,19 +17,37 @@ use PDO;
 class Connection extends \yii\db\Connection
 {
 
+    /**
+     * @var array PDO attributes (name => value) that should be set when calling [[open()]]
+     * to establish a DB connection. Please refer to the
+     * [PHP manual](http://www.php.net/manual/en/function.PDO-setAttribute.php) for
+     * details about available attributes.
+     */
+    public $attributes = [
+        PDO::ATTR_CASE => PDO::CASE_NATURAL,
+        PDO::ATTR_STRINGIFY_FETCHES => true,
+    ];
+    
+    /**
+     * @var array mapping between PDO driver names and [[Schema]] classes.
+     * The keys of the array are PDO driver names while the values the corresponding
+     * schema class name or configuration. Please refer to [[Yii::createObject()]] for
+     * details on how to specify a configuration.
+     *
+     * This property is mainly used by [[getSchema()]] when fetching the database schema information.
+     * You normally do not need to set this property unless you want to use your own
+     * [[Schema]] class to support DBMS that is not supported by Yii.
+     */
     public $schemaMap = [
         'informix'   => 'edgardmessias\db\informix\Schema', // Informix
     ];
     
-    protected function initConnection()
-    {
-        if (!isset($this->attributes[PDO::ATTR_CASE])) {
-            $this->pdo->setAttribute(PDO::ATTR_CASE, PDO::CASE_NATURAL);
-        }
-        
-        parent::initConnection();
-    }
-    
+    /**
+     * Starts a transaction.
+     * @param string|null $isolationLevel The isolation level to use for this transaction.
+     * See [[Transaction::begin()]] for details.
+     * @return Transaction the transaction initiated
+     */
     public function beginTransaction($isolationLevel = null)
     {
         $transaction = parent::beginTransaction(null);
