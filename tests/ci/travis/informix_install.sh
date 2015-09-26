@@ -190,6 +190,8 @@ sed -i "s#DEF_TABLE_LOCKMODE page#DEF_TABLE_LOCKMODE row#g"                "${ON
 sed -i "s#TAPEDEV .*#TAPEDEV   ${DATA_DIR}/backup/datas#g"                 "${ONCONFIG_PATH}"
 sed -i "s#LTAPEDEV .*#LTAPEDEV ${DATA_DIR}/backup/logs#g"                  "${ONCONFIG_PATH}"
 echo "SBSPACENAME sbspace" >> "${ONCONFIG_PATH}"
+
+cat "${ONCONFIG_PATH}"
 chown "${USER_NAME}:" "${ONCONFIG_PATH}"
 
 echo ">>>    Postconfig sqlhost ..."
