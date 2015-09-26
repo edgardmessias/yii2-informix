@@ -21,6 +21,7 @@ Unsupported
 Functions not supported by the Informix database:
 
  * `INSERT`, `UPDATE`, `DELETE` with `READ UNCOMMITTED` transaction
+ * Batch Insert with `TEXT`, `BLOB` or `CLOB` data type
 
 Installation
 ------------
