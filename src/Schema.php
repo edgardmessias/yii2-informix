@@ -53,6 +53,7 @@ class Schema extends \yii\db\Schema
         'serial8'                 => self::TYPE_BIGINT,
         'smallfloat'              => self::TYPE_FLOAT,
         'smallint'                => self::TYPE_SMALLINT,
+        'text'                    => self::TYPE_TEXT,
         'varchar'                 => self::TYPE_STRING,
     ];
 
@@ -60,7 +61,16 @@ class Schema extends \yii\db\Schema
     {
         return new QueryBuilder($this->db);
     }
-    
+
+    /**
+     * @return \edgardmessias\db\informix\ColumnSchema
+     * @throws \yii\base\InvalidConfigException
+     */
+    protected function createColumnSchema()
+    {
+        return \Yii::createObject('edgardmessias\db\informix\ColumnSchema');
+    }
+
     /**
      * Resolves the table name and schema name (if any).
      * @param \yii\db\TableSchema $table the table metadata object
@@ -198,9 +208,17 @@ SQL;
                 $column['type'] = $columnsTypes[$coltypereal];
                 $extended_id = (int) $column['extended_id'];
                 switch ($coltypereal) {
+                    case 0://CHAR
+                    case 13://VARCHAR
+                    case 15://NCHAR
+                    case 16://NVARCHAR
+                        $column['colprecision'] = $column['collength'];
+                        break;
                     case 5:
                     case 8:
-                        $column['collength'] = floor($column['collength'] / 256) . ',' . $column['collength'] % 256;
+                        $column['colprecision'] = floor($column['collength'] / 256);
+                        $column['colscale'] = $column['collength'] % 256;
+                        $column['collength'] = $column['colprecision'] . ',' . $column['colscale'];
                         break;
                     case 14:
                     case 10:
@@ -269,19 +287,19 @@ SQL;
             //http://publib.boulder.ibm.com/infocenter/idshelp/v10/index.jsp?topic=/com.ibm.sqlr.doc/sqlrmst48.htm
             switch ($column['deftype']) {
                 case 'C':
-                    $column['defvalue'] = 'CURRENT';
+                    $column['defvalue'] = new \yii\db\Expression('CURRENT');
                     break;
                 case 'N':
-                    $column['defvalue'] = 'NULL';
+                    $column['defvalue'] = new \yii\db\Expression('NULL');
                     break;
                 case 'S':
-                    $column['defvalue'] = 'DBSERVERNAME';
+                    $column['defvalue'] = new \yii\db\Expression('DBSERVERNAME');
                     break;
                 case 'T':
-                    $column['defvalue'] = 'TODAY';
+                    $column['defvalue'] = new \yii\db\Expression('TODAY');
                     break;
                 case 'U':
-                    $column['defvalue'] = 'USER';
+                    $column['defvalue'] = new \yii\db\Expression('USER');
                     break;
                 case 'L':
                     //CHAR, NCHAR, VARCHAR, NVARCHAR, LVARCHAR, VARIABLELENGTH, FIXEDLENGTH
@@ -289,8 +307,8 @@ SQL;
                         $explod = explode(chr(0), $column['defvalue']);
                         $column['defvalue'] = isset($explod[0]) ? $explod[0] : '';
                     } else {
-                        $explod = explode(' ', $column['defvalue']);
-                        $column['defvalue'] = isset($explod[1]) ? $explod[1] : '';
+                        $explod = explode(' ', $column['defvalue'], 2);
+                        $column['defvalue'] = isset($explod[1]) ? rtrim($explod[1]) : '';
                         if (in_array($coltypereal, [3, 5, 8])) {
                             $column['defvalue'] = (string) (float) $column['defvalue'];
                         }
@@ -316,26 +334,33 @@ SQL;
         $c->name = $column['colname'];
         $c->allowNull = (boolean) $column['allownull'];
         $c->isPrimaryKey = false;
-        
+
         $type = strtolower($column['type']);
         $c->autoIncrement = strpos($type, 'serial') !== false;
         $c->dbType = $type;
-        
+
         if (isset($this->typeMap[$type])) {
             $c->type = $this->typeMap[$type];
         } else {
             $c->type = self::TYPE_STRING;
         }
-        
+
         if (preg_match('/(char|numeric|decimal|money)/i', $c->dbType)) {
             $c->dbType .= '(' . $column['collength'] . ')';
+            $c->size = (int) $column['collength'];
+            $c->precision = isset($column['colprecision']) ? (int) $column['colprecision'] : null;
+            $c->scale = isset($column['colscale']) ? (int) $column['colscale'] : null;
         } elseif (preg_match('/(datetime|interval)/i', $c->dbType)) {
-            $c->dbType .= ' ' . $column['collength'];
+            $c->dbType .= ' ' . strtolower($column['collength']);
+            if (isset($this->typeMap[$c->dbType])) {
+                $c->type = $this->typeMap[$c->dbType];
+            }
         }
-        
+
         $c->phpType = $this->getColumnPhpType($c);
 
-        $c->defaultValue = $column['defvalue'];
+        $c->defaultValue = $c->phpTypecast($column['defvalue']);
+
         return $c;
     }
 
@@ -500,6 +525,7 @@ EOD;
                 $row = array_change_key_case($row, CASE_LOWER);
             }
 
+            $foreignKey = [$row['reftabname']];
             $columnsbase = $this->getColumnsNumber($row['basetabid']);
             $columnsrefer = $this->getColumnsNumber($row['reftabid']);
             for ($x = 1; $x < 16; $x++) {
@@ -513,11 +539,36 @@ EOD;
                     continue;
                 }
                 $colnameref = $columnsrefer[$colnoref];
-                if (isset($table->columns[$colnamebase])) {
-                    $table->columns[$colnamebase]->isForeignKey = true;
-                }
-                $table->foreignKeys[$colnamebase] = [$row['reftabname'], $colnameref];
+                $foreignKey[$colnameref] = $colnamebase;
             }
+
+            $table->foreignKeys[] = $foreignKey;
         }
+    }
+
+    /**
+     * Returns all table names in the database.
+     * This method should be overridden by child classes in order to support this feature
+     * because the default implementation simply throws an exception.
+     * @param string $schema the schema of the tables. Defaults to empty string, meaning the current or default schema.
+     * @return array all table names in the database. The names have NO schema name prefix.
+     * @throws NotSupportedException if this method is called
+     */
+    protected function findTableNames($schema = '')
+    {
+        $sql = <<<SQL
+SELECT TRIM(tabname) AS tabname
+FROM systables
+WHERE systables.tabid >= 100
+SQL;
+        if ($schema !== '') {
+            $sql .= " AND systables.owner=:schema";
+        }
+        $sql .= " ORDER BY systables.tabname;";
+        $command = $this->db->createCommand($sql);
+        if ($schema !== '') {
+            $command->bindValue(':schema', $schema);
+        }
+        return $command->queryColumn();
     }
 }

@@ -6,7 +6,7 @@ use yii\db\Connection;
 use yii\db\Transaction;
 
 /**
- * @group sphinx
+ * @group informix
  */
 class ConnectionTest extends \yiiunit\framework\db\ConnectionTest
 {
