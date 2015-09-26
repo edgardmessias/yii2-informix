@@ -189,6 +189,7 @@ sed -i "s#DBSERVERNAME.*#DBSERVERNAME ${INSTANCE_NAME}#g"                  "${ON
 sed -i "s#DEF_TABLE_LOCKMODE page#DEF_TABLE_LOCKMODE row#g"                "${ONCONFIG_PATH}"
 sed -i "s#TAPEDEV .*#TAPEDEV   ${DATA_DIR}/backup/datas#g"                 "${ONCONFIG_PATH}"
 sed -i "s#LTAPEDEV .*#LTAPEDEV ${DATA_DIR}/backup/logs#g"                  "${ONCONFIG_PATH}"
+sed -i "s#SBSPACENAME .*#SBSPACENAME sbspace#g"                            "${ONCONFIG_PATH}"
 chown "${USER_NAME}:" "${ONCONFIG_PATH}"
 
 echo ">>>    Postconfig sqlhost ..."
