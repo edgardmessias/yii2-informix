@@ -32,7 +32,7 @@ GROUP_NAME="${USER_NAME}"
 GROUP_GID=200
 
 # Delete downloaded data including packages
-DO_CLEANUP="YES"
+DO_CLEANUP="NO"
 
 
 ##
