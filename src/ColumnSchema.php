@@ -15,6 +15,24 @@ namespace edgardmessias\db\informix;
 class ColumnSchema extends \yii\db\ColumnSchema
 {
     /**
+     * Converts the input value according to [[type]] and [[dbType]] for use in a db query.
+     * If the value is null or an [[Expression]], it will not be converted.
+     * @param mixed $value input value
+     * @return mixed converted value. This may also be an array containing the value as the first element
+     * and the PDO type as the second element.
+     */
+    public function dbTypecast($value)
+    {
+        if ($this->phpType == Schema::TYPE_BOOLEAN) {
+            return ($value)? 't':'f';
+        }
+        
+        // the default implementation does the same as casting for PHP, but it should be possible
+        // to override this with annotation of explicit PDO type.
+        return $this->typecast($value);
+    }
+
+    /**
      * Converts the input value according to [[phpType]] after retrieval from the database.
      * If the value is null or an [[Expression]], it will not be converted.
      * @param mixed $value input value
