@@ -65,10 +65,17 @@ class Schema extends \yii\db\Schema
      */
     public function getPdoType($data)
     {
-        if ($data ==null) {
-            return \PDO::PARAM_STR; // [Informix][Informix ODBC Driver]Wrong number of parameters if set NULL
-        }
-        return parent::getPdoType($data);
+        static $typeMap = [
+            // php type => PDO type
+            'boolean' => \PDO::PARAM_BOOL,
+            'integer' => \PDO::PARAM_INT,
+            'string' => \PDO::PARAM_STR,
+            'resource' => \PDO::PARAM_LOB,
+            'NULL' => \PDO::PARAM_STR, // [Informix][Informix ODBC Driver]Wrong number of parameters if set NULL
+        ];
+        $type = gettype($data);
+
+        return isset($typeMap[$type]) ? $typeMap[$type] : \PDO::PARAM_STR;
     }
 
     public function createQueryBuilder()
