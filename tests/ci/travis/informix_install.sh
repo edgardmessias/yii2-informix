@@ -194,6 +194,11 @@ sed -i 's#^SBSPACENAME.*#SBSPACENAME sbspace#g'                            "${ON
 cat "${ONCONFIG_PATH}"
 chown "${USER_NAME}:" "${ONCONFIG_PATH}"
 
+ALARMPROGRAM_PATH="${INSTALL_DIR}"/etc/alarmprogram.sh
+sed -i 's#^BACKUPLOGS.*#BACKUPLOGS=Y#g'              "${ALARMPROGRAM_PATH}"
+sed -i 's#^BACKUP_CMD.*#BACKUP_CMD="ontape -a -d"#g' "${ALARMPROGRAM_PATH}"
+cat "${ALARMPROGRAM_PATH}"
+
 echo ">>>    Postconfig sqlhost ..."
 if [ ! `grep onsoctcp "${SQLHOSTS_PATH}" | wc -l` -ne 0 ] ; then
 	echo "${INSTANCE_NAME}        onsoctcp        *               sqlexec" >> "${SQLHOSTS_PATH}"
