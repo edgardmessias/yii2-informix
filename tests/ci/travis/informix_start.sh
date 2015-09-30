@@ -32,16 +32,16 @@ if [ ! -e "${INFORMIX_DATA_DIR}/.initialized" ] ; then
 	mkdir -p "${INFORMIX_DATA_DIR}"/backup/logs
 	mkdir -p "${INFORMIX_DATA_DIR}"/spaces/dbs_root/
 	touch "${INFORMIX_DATA_DIR}"/spaces/dbs_root/dbs_root.000
-	touch "${INFORMIX_DATA_DIR}"/spaces/dbs_root/sbspace
+	touch "${INFORMIX_DATA_DIR}"/spaces/sbspace
 
 	chown -R informix: "${INFORMIX_DATA_DIR}"/{logs,backup,spaces}
 	chmod 660 "${INFORMIX_DATA_DIR}"/spaces/dbs_root/dbs_root.000
-	chmod 660 "${INFORMIX_DATA_DIR}"/spaces/dbs_root/sbspace
+	chmod 660 "${INFORMIX_DATA_DIR}"/spaces/sbspace
 	chmod -R 777 "${INFORMIX_DATA_DIR}"/backup
 
 	# Initialize shared memmory and data structure
 	# and kill server
-	onspaces -c -S sbspace -p "${INFORMIX_DATA_DIR}"/spaces/dbs_root/sbspace -o 0 -s 2000
+	onspaces -c -S sbspace -p "${INFORMIX_DATA_DIR}"/spaces/sbspace -o 0 -s 2000
 	oninit -iy && touch "${INFORMIX_DATA_DIR}/.initialized"
 	onmode -ky
 fi
