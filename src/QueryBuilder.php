@@ -37,6 +37,28 @@ class QueryBuilder extends \yii\db\QueryBuilder
         Schema::TYPE_BOOLEAN   => 'boolean',
         Schema::TYPE_MONEY     => 'money(19,4)',
     ];
+    
+    /**
+     * Generates a SELECT SQL statement from a [[Query]] object.
+     * @param Query $query the [[Query]] object from which the SQL statement will be generated.
+     * @param array $params the parameters to be bound to the generated SQL statement. These parameters will
+     * be included in the result with the additional parameters generated during the query building process.
+     * @return array the generated SQL statement (the first array element) and the corresponding
+     * parameters to be bound to the SQL statement (the second array element). The parameters returned
+     * include those provided in `$params`.
+     */
+    public function build($query, $params = array())
+    {
+        list($sql, $params) = parent::build($query, $params);
+        
+        foreach ($params as $k => $v) {
+            if (is_bool($v)) {
+                $params[$k] = $v ? 1 : 0;
+            }
+        }
+        
+        return [$sql, $params];
+    }
 
     /**
      * Generates a batch INSERT SQL statement.
