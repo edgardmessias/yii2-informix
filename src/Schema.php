@@ -57,6 +57,20 @@ class Schema extends \yii\db\Schema
         'varchar'                 => self::TYPE_STRING,
     ];
 
+    /**
+     * Determines the PDO type for the given PHP data value.
+     * @param mixed $data the data whose PDO type is to be determined
+     * @return integer the PDO type
+     * @see http://www.php.net/manual/en/pdo.constants.php
+     */
+    public function getPdoType($data)
+    {
+        if ($data ==null) {
+            return \PDO::PARAM_STR; // [Informix][Informix ODBC Driver]Wrong number of parameters if set NULL
+        }
+        return parent::getPdoType($data);
+    }
+
     public function createQueryBuilder()
     {
         return new QueryBuilder($this->db);
