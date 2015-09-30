@@ -230,6 +230,43 @@ class QueryBuilder extends \yii\db\QueryBuilder
     }
 
     /**
+     * Creates a SQL statement for resetting the sequence value of a table's primary key.
+     * The sequence will be reset such that the primary key of the next new row inserted
+     * will have the specified value or 1.
+     * @param string $table the name of the table whose primary key sequence will be reset
+     * @param array|string $value the value for the primary key of the next new row inserted. If this is not set,
+     * the next new row's primary key will have a value 1.
+     * @return string the SQL statement for resetting sequence
+     * @throws NotSupportedException if this is not supported by the underlying DBMS
+     */
+    public function resetSequence($table, $value = null)
+    {
+        $tableSchema = $this->db->getTableSchema($table);
+        if ($tableSchema === null) {
+            throw new InvalidParamException("Unknown table: $table");
+        }
+        if ($tableSchema->sequenceName === null) {
+            return '';
+        }
+
+        $sequence = $this->db->quoteTableName($tableSchema->sequenceName);
+        $tableName = $this->db->quoteTableName($table);
+
+        if ($value !== null) {
+            $value = (int) $value;
+        } else {
+            // use master connection to get the biggest PK value
+            $value = $this->db->useMaster(function (Connection $db) use ($sequence, $tableName) {
+                return $db->createCommand("SELECT MAX({$sequence}) FROM {$tableName}")->queryScalar();
+            }) + 1;
+        }
+        
+        $serialType = $tableSchema->columns[$tableSchema->sequenceName]->dbType;
+        
+        return "ALTER TABLE {$tableName} MODIFY ({$sequence} $serialType ($value))";
+    }
+
+    /**
      * Builds a SQL statement for enabling or disabling integrity check.
      * @param boolean $check whether to turn on or off the integrity check.
      * @param string $schema the schema of the tables. Defaults to empty string, meaning the current or default schema.
