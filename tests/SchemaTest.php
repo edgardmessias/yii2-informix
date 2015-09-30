@@ -12,6 +12,29 @@ class SchemaTest extends \yiiunit\framework\db\SchemaTest
 
     protected $driverName = 'informix';
 
+    public function testGetPDOType()
+    {
+        $values = [
+            [null, \PDO::PARAM_STR],
+            ['', \PDO::PARAM_STR],
+            ['hello', \PDO::PARAM_STR],
+            [0, \PDO::PARAM_INT],
+            [1, \PDO::PARAM_INT],
+            [1337, \PDO::PARAM_INT],
+            [true, \PDO::PARAM_BOOL],
+            [false, \PDO::PARAM_BOOL],
+            [$fp = fopen(__FILE__, 'rb'), \PDO::PARAM_LOB],
+        ];
+
+        /* @var $schema \edgardmessias\db\informix\Schema */
+        $schema = $this->getConnection()->schema;
+
+        foreach ($values as $value) {
+            $this->assertEquals($value[1], $schema->getPdoType($value[0]), 'type for value ' . print_r($value[0], true) . ' does not match.');
+        }
+        fclose($fp);
+    }
+
     public function getExpectedColumns()
     {
         $columns = parent::getExpectedColumns();
