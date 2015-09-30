@@ -42,6 +42,28 @@ class QueryBuilder extends \yii\db\QueryBuilder
     ];
     
     /**
+     * Builds a SQL statement for adding a primary key constraint to an existing table.
+     * @param string $name the name of the primary key constraint.
+     * @param string $table the table that the primary key constraint will be added to.
+     * @param string|array $columns comma separated string or array of columns that the primary key will consist of.
+     * @return string the SQL statement for adding a primary key constraint to an existing table.
+     */
+    public function addPrimaryKey($name, $table, $columns)
+    {
+        if (is_string($columns)) {
+            $columns = preg_split('/\s*,\s*/', $columns, -1, PREG_SPLIT_NO_EMPTY);
+        }
+
+        foreach ($columns as $i => $col) {
+            $columns[$i] = $this->db->quoteColumnName($col);
+        }
+
+        return 'ALTER TABLE ' . $this->db->quoteTableName($table)
+            .  ' ADD CONSTRAINT PRIMARY KEY ('
+            . implode(', ', $columns). ' ) CONSTRAINT ' . $this->db->quoteColumnName($name);
+    }
+
+    /**
      * Generates a SELECT SQL statement from a [[Query]] object.
      * @param Query $query the [[Query]] object from which the SQL statement will be generated.
      * @param array $params the parameters to be bound to the generated SQL statement. These parameters will
