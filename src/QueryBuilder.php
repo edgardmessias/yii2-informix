@@ -116,6 +116,34 @@ class QueryBuilder extends \yii\db\QueryBuilder
     }
 
     /**
+     * Builds the ORDER BY and LIMIT/OFFSET clauses and appends them to the given SQL.
+     * @param string $sql the existing SQL (without ORDER BY/LIMIT/OFFSET)
+     * @param array $orderBy the order by columns. See [[Query::orderBy]] for more details on how to specify this parameter.
+     * @param integer $limit the limit number. See [[Query::limit]] for more details.
+     * @param integer $offset the offset number. See [[Query::offset]] for more details.
+     * @return string the SQL completed with ORDER BY/LIMIT/OFFSET (if any)
+     */
+    public function buildOrderByAndLimit($sql, $orderBy, $limit, $offset)
+    {
+        $orderBy = $this->buildOrderBy($orderBy);
+        if ($orderBy !== '') {
+            $sql .= $this->separator . $orderBy;
+        }
+        if ($this->hasLimit($limit)) {
+            $find = '/^([\s(])*SELECT(\s+SKIP\s+\d+)?(\s+LIMIT\s+\d+)?(\s+DISTINCT)?/i';
+            $replace = "\\1SELECT\\2 LIMIT $limit\\4";
+            $sql = preg_replace($find, $replace, $sql);
+        }
+        if ($this->hasOffset($offset)) {
+            $find = '/^([\s(])*SELECT(\s+SKIP\s+\d+)?(\s+DISTINCT)?/i';
+            $replace =  "\\1SELECT SKIP $offset\\3";
+            $sql = preg_replace($find, $replace, $sql);
+        }
+        return $sql;
+    }
+
+
+    /**
      * Builds SQL for IN condition
      *
      * @param string $operator
