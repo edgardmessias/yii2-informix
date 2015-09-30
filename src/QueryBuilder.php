@@ -64,6 +64,23 @@ class QueryBuilder extends \yii\db\QueryBuilder
     }
 
     /**
+     * Builds a SQL statement for enabling or disabling integrity check.
+     * @param boolean $check whether to turn on or off the integrity check.
+     * @param string $schema the schema of the tables. Defaults to empty string, meaning the current or default schema.
+     * @param string $table the table name. Defaults to empty string, meaning that no table will be changed.
+     * @return string the SQL statement for checking integrity
+     * @throws NotSupportedException if this is not supported by the underlying DBMS
+     */
+    public function checkIntegrity($check = true, $schema = '', $table = '')
+    {
+        if ($table) {
+            return 'SET CONSTRAINTS FOR ' . $this->db->quoteTableName($table) . ' ' . ($check ? 'ENABLED' : 'DISABLED');
+        }
+        
+        return 'SET CONSTRAINTS ALL ' . ($check ? 'IMMEDIATE' : 'DEFERRED');
+    }
+
+    /**
      * Generates a SELECT SQL statement from a [[Query]] object.
      * @param Query $query the [[Query]] object from which the SQL statement will be generated.
      * @param array $params the parameters to be bound to the generated SQL statement. These parameters will
