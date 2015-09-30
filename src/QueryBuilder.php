@@ -188,6 +188,37 @@ class QueryBuilder extends \yii\db\QueryBuilder
     }
 
     /**
+     * Builds a SQL statement for adding a foreign key constraint to an existing table.
+     * The method will properly quote the table and column names.
+     * @param string $name the name of the foreign key constraint.
+     * @param string $table the table that the foreign key constraint will be added to.
+     * @param string|array $columns the name of the column to that the constraint will be added on.
+     * If there are multiple columns, separate them with commas or use an array to represent them.
+     * @param string $refTable the table that the foreign key references to.
+     * @param string|array $refColumns the name of the column that the foreign key references to.
+     * If there are multiple columns, separate them with commas or use an array to represent them.
+     * @param string $delete the ON DELETE option. Most DBMS support these options: RESTRICT, CASCADE, NO ACTION, SET DEFAULT, SET NULL
+     * @param string $update the ON UPDATE option. Most DBMS support these options: RESTRICT, CASCADE, NO ACTION, SET DEFAULT, SET NULL
+     * @return string the SQL statement for adding a foreign key constraint to an existing table.
+     */
+    public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete = null, $update = null)
+    {
+        $sql = 'ALTER TABLE ' . $this->db->quoteTableName($table)
+            . ' ADD CONSTRAINT FOREIGN KEY (' . $this->buildColumns($columns) . ')'
+            . ' REFERENCES ' . $this->db->quoteTableName($refTable)
+            . ' (' . $this->buildColumns($refColumns) . ')'
+            . ' CONSTRAINT ' . $this->db->quoteColumnName($name);
+        if ($delete !== null) {
+            $sql .= ' ON DELETE ' . $delete;
+        }
+        if ($update !== null) {
+            $sql .= ' ON UPDATE ' . $update;
+        }
+
+        return $sql;
+    }
+
+    /**
      * Builds a SQL statement for enabling or disabling integrity check.
      * @param boolean $check whether to turn on or off the integrity check.
      * @param string $schema the schema of the tables. Defaults to empty string, meaning the current or default schema.
