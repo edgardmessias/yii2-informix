@@ -8,6 +8,9 @@
 
 namespace edgardmessias\db\informix;
 
+use yii\base\NotSupportedException;
+use yii\db\Query;
+
 /**
  * @author Edgard Messias <edgardmessias@gmail.com>
  * @since 1.0
