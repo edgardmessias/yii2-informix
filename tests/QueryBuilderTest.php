@@ -11,6 +11,7 @@ class QueryBuilderTest extends \yiiunit\framework\db\QueryBuilderTest
 {
 
     use DatabaseTestTrait;
+
     use \yii\db\SchemaBuilderTrait;
 
     protected $driverName = 'informix';
@@ -33,7 +34,7 @@ class QueryBuilderTest extends \yiiunit\framework\db\QueryBuilderTest
     {
         return str_replace('`', '', $sql);
     }
-    
+
     /**
      * this is not used as a dataprovider for testGetColumnType to speed up the test
      * when used as dataprovider every single line will cause a reconnect with the database which is not needed here
@@ -52,8 +53,9 @@ class QueryBuilderTest extends \yiiunit\framework\db\QueryBuilderTest
             [Schema::TYPE_STRING . ' NOT NULL', $this->string()->notNull(), 'varchar(255) NOT NULL'],
             [Schema::TYPE_TEXT, $this->text(), 'text'],
             [Schema::TYPE_TEXT . '(255)', $this->text(), 'text', Schema::TYPE_TEXT],
-//            [Schema::TYPE_TEXT . ' CHECK (value LIKE "test%")', $this->text()->check('value LIKE "test%"'), 'text CHECK (value LIKE "test%")'],
-//            [Schema::TYPE_TEXT . '(255) CHECK (value LIKE "test%")', $this->text()->check('value LIKE "test%"'), 'text CHECK (value LIKE "test%")', Schema::TYPE_TEXT . ' CHECK (value LIKE "test%")'],
+            //-219	Wildcard matching may not be used with non-character types.
+            //[Schema::TYPE_TEXT . ' CHECK (value LIKE "test%")', $this->text()->check('value LIKE "test%"'), 'text CHECK (value LIKE "test%")'],
+            //[Schema::TYPE_TEXT . '(255) CHECK (value LIKE "test%")', $this->text()->check('value LIKE "test%"'), 'text CHECK (value LIKE "test%")', Schema::TYPE_TEXT . ' CHECK (value LIKE "test%")'],
             [Schema::TYPE_TEXT . ' NOT NULL', $this->text()->notNull(), 'text NOT NULL'],
             [Schema::TYPE_TEXT . '(255) NOT NULL', $this->text()->notNull(), 'text NOT NULL', Schema::TYPE_TEXT . ' NOT NULL'],
             [Schema::TYPE_SMALLINT, $this->smallInteger(), 'smallint'],
@@ -84,10 +86,10 @@ class QueryBuilderTest extends \yiiunit\framework\db\QueryBuilderTest
             [Schema::TYPE_DECIMAL . '(12,4) CHECK (value > 5.6)', $this->decimal(12, 4)->check('value > 5.6'), 'decimal(12,4) CHECK (value > 5.6)'],
             [Schema::TYPE_DECIMAL . ' NOT NULL', $this->decimal()->notNull(), 'decimal(10,0) NOT NULL'],
             [Schema::TYPE_DATETIME, $this->dateTime(), 'datetime year to second'],
-            [Schema::TYPE_DATETIME . " CHECK (value BETWEEN '2011-01-01' AND '2013-01-01')", $this->dateTime()->check("value BETWEEN '2011-01-01' AND '2013-01-01'"), "datetime year to second CHECK (value BETWEEN '2011-01-01' AND '2013-01-01')"],
+            [Schema::TYPE_DATETIME . " CHECK (value BETWEEN '2011-01-01 00:00:00' AND '2013-01-01 00:00:00')", $this->dateTime()->check("value BETWEEN '2011-01-01 00:00:00' AND '2013-01-01 00:00:00'"), "datetime year to second CHECK (value BETWEEN '2011-01-01 00:00:00' AND '2013-01-01 00:00:00')"],
             [Schema::TYPE_DATETIME . ' NOT NULL', $this->dateTime()->notNull(), 'datetime year to second NOT NULL'],
             [Schema::TYPE_TIMESTAMP, $this->timestamp(), 'datetime year to second'],
-            [Schema::TYPE_TIMESTAMP . " CHECK (value BETWEEN '2011-01-01' AND '2013-01-01')", $this->timestamp()->check("value BETWEEN '2011-01-01' AND '2013-01-01'"), "datetime year to second CHECK (value BETWEEN '2011-01-01' AND '2013-01-01')"],
+            [Schema::TYPE_TIMESTAMP . " CHECK (value BETWEEN '2011-01-01 00:00:00' AND '2013-01-01 00:00:00')", $this->timestamp()->check("value BETWEEN '2011-01-01 00:00:00' AND '2013-01-01 00:00:00'"), "datetime year to second CHECK (value BETWEEN '2011-01-01 00:00:00' AND '2013-01-01 00:00:00')"],
             [Schema::TYPE_TIMESTAMP . ' NOT NULL', $this->timestamp()->notNull(), 'datetime year to second NOT NULL'],
             [Schema::TYPE_TIME, $this->time(), 'datetime hour to second'],
             [Schema::TYPE_TIME . " CHECK (value BETWEEN '12:00:00' AND '13:01:01')", $this->time()->check("value BETWEEN '12:00:00' AND '13:01:01'"), "datetime hour to second CHECK (value BETWEEN '12:00:00' AND '13:01:01')"],
@@ -97,27 +99,26 @@ class QueryBuilderTest extends \yiiunit\framework\db\QueryBuilderTest
             [Schema::TYPE_DATE . ' NOT NULL', $this->date()->notNull(), 'datetime year to day NOT NULL'],
             [Schema::TYPE_BINARY, $this->binary(), 'blob'],
             [Schema::TYPE_BOOLEAN, $this->boolean(), 'boolean'],
-            [Schema::TYPE_BOOLEAN . " NOT NULL DEFAULT 't'", $this->boolean()->notNull()->defaultValue(true), "boolean NOT NULL DEFAULT 't'"],
-            [Schema::TYPE_MONEY, $this->money(), 'decimal(19,4)'],
+            [Schema::TYPE_BOOLEAN . " DEFAULT 't' NOT NULL", $this->boolean()->notNull()->defaultValue(true), "boolean DEFAULT 't' NOT NULL"],
+            [Schema::TYPE_MONEY, $this->money(), 'money(19,4)'],
             [Schema::TYPE_MONEY . '(16,2)', $this->money(16, 2), 'money(16,2)'],
             [Schema::TYPE_MONEY . ' CHECK (value > 0.0)', $this->money()->check('value > 0.0'), 'money(19,4) CHECK (value > 0.0)'],
             [Schema::TYPE_MONEY . '(16,2) CHECK (value > 0.0)', $this->money(16, 2)->check('value > 0.0'), 'money(16,2) CHECK (value > 0.0)'],
             [Schema::TYPE_MONEY . ' NOT NULL', $this->money()->notNull(), 'money(19,4) NOT NULL'],
         ];
     }
-    
+
     public function conditionProvider()
     {
         $conditions = parent::conditionProvider();
 
         $conditions[49] = [ ['in', ['id', 'name'], [['id' => 1, 'name' => 'foo'], ['id' => 2, 'name' => 'bar']]], '((id = :qp0 AND name = :qp1) OR (id = :qp2 AND name = :qp3))', [':qp0' => 1, ':qp1' => 'foo', ':qp2' => 2, ':qp3' => 'bar']];
         $conditions[50] = [ ['not in', ['id', 'name'], [['id' => 1, 'name' => 'foo'], ['id' => 2, 'name' => 'bar']]], '((id != :qp0 OR name != :qp1) AND (id != :qp2 OR name != :qp3))', [':qp0' => 1, ':qp1' => 'foo', ':qp2' => 2, ':qp3' => 'bar']];
-        
+
         //Remove composite IN
         unset($conditions[51]);
         unset($conditions[52]);
-        
+
         return $conditions;
     }
-    
 }
