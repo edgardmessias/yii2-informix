@@ -58,4 +58,23 @@ class Connection extends \yii\db\Connection
         
         return $transaction;
     }
+    
+    /**
+     * The DELIMIDENT environment variable specifies that strings enclosed between double quotation ( " ) marks are delimited database identifiers
+     * @see https://www-01.ibm.com/support/knowledgecenter/SSGU8G_12.1.0/com.ibm.sqlr.doc/ids_sqr_233.htm
+     * @return boolean true if DELIMIDENT=y
+     */
+    public function isDelimident()
+    {
+        $matches = [];
+        
+        $delimident = '';
+        if (preg_match('/DELIMIDENT=(\w)/i', $this->dsn, $matches)) {
+            $delimident = $matches[1];
+        } else {
+            $delimident = getenv('DELIMIDENT');
+        }
+        
+        return strtolower($delimident) == 'y';
+    }
 }

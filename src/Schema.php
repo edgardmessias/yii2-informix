@@ -139,6 +139,9 @@ class Schema extends \yii\db\Schema
      */
     public function quoteSimpleTableName($name)
     {
+        if ($this->db->isDelimident()) {
+            return strpos($name, '"') !== false ? $name : '"' . $name . '"';
+        }
         return trim($name, "\"'`");
     }
 
@@ -151,6 +154,9 @@ class Schema extends \yii\db\Schema
      */
     public function quoteSimpleColumnName($name)
     {
+        if ($this->db->isDelimident()) {
+            return strpos($name, '"') !== false || $name === '*' ? $name : '"' . $name . '"';
+        }
         return trim($name, "\"'`");
     }
 
