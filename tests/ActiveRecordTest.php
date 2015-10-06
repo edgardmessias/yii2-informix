@@ -2,6 +2,8 @@
 
 namespace edgardmessias\unit\db\informix;
 
+use yiiunit\data\ar\Customer;
+use yiiunit\data\ar\OrderItem;
 use yiiunit\data\ar\Type;
 
 /**
@@ -51,7 +53,7 @@ class ActiveRecordTest extends \yiiunit\framework\db\ActiveRecordTest
     public function testPopulateWithoutPk()
     {
         //CamelCase works if DELIMIDENT is enabled
-        if (\yiiunit\data\ar\Customer::$db->isDelimident()) {
+        if (Customer::$db->isDelimident()) {
             parent::testPopulateWithoutPk();
             return;
         }
