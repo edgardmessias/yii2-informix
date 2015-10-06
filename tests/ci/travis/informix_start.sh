@@ -41,8 +41,8 @@ if [ ! -e "${INFORMIX_DATA_DIR}/.initialized" ] ; then
 
 	# Initialize shared memmory and data structure
 	# and kill server
-	onspaces -c -S sbspace -p "${INFORMIX_DATA_DIR}"/spaces/sbspace -o 0 -s 2000
 	oninit -iy && touch "${INFORMIX_DATA_DIR}/.initialized"
+	onspaces -c -S sbspace -p "${INFORMIX_DATA_DIR}"/spaces/sbspace -o 0 -s 2000
 	onmode -ky
 fi
 
