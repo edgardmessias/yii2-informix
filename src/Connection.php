@@ -16,6 +16,8 @@ use PDO;
  */
 class Connection extends \yii\db\Connection
 {
+    
+    public $isDelimident = null;
 
     /**
      * @var array PDO attributes (name => value) that should be set when calling [[open()]]
@@ -82,6 +84,10 @@ class Connection extends \yii\db\Connection
      */
     public function isDelimident()
     {
+        if ($this->isDelimident !== null) {
+            return $this->isDelimident;
+        }
+        
         $matches = [];
         
         $delimident = '';
@@ -91,6 +97,7 @@ class Connection extends \yii\db\Connection
             $delimident = getenv('DELIMIDENT');
         }
         
-        return strtolower($delimident) == 'y';
+        $this->isDelimident = strtolower($delimident) == 'y';
+        return $this->isDelimident;
     }
 }
