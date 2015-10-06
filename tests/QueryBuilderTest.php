@@ -22,7 +22,17 @@ class QueryBuilderTest extends \yiiunit\framework\db\QueryBuilderTest
      */
     protected function getQueryBuilder()
     {
-        return new \edgardmessias\db\informix\QueryBuilder($this->getConnection(true, false));
+        if (self::$params === null) {
+            self::$params = include __DIR__ . '/data/config.php';
+        }
+        $databases = self::getParam('databases');
+        $this->database = $databases[$this->driverName];
+
+        $connection = $this->getConnection(true, false);
+
+        \Yii::$container->set('db', $connection);
+
+        return new \edgardmessias\db\informix\QueryBuilder($connection);
     }
 
     /**
@@ -32,6 +42,9 @@ class QueryBuilderTest extends \yiiunit\framework\db\QueryBuilderTest
      */
     protected function replaceQuotes($sql)
     {
+        if($this->getQueryBuilder()->db->isDelimident()){
+            return str_replace('`', '"', $sql);
+        }
         return str_replace('`', '', $sql);
     }
 
@@ -48,14 +61,14 @@ class QueryBuilderTest extends \yiiunit\framework\db\QueryBuilderTest
             [Schema::TYPE_PK . '(8) CHECK (value > 5)', $this->primaryKey(8)->check('value > 5'), 'serial PRIMARY KEY NOT NULL CHECK (value > 5)'],
             [Schema::TYPE_STRING, $this->string(), 'varchar(255)'],
             [Schema::TYPE_STRING . '(32)', $this->string(32), 'varchar(32)'],
-            [Schema::TYPE_STRING . ' CHECK (value LIKE "test%")', $this->string()->check('value LIKE "test%"'), 'varchar(255) CHECK (value LIKE "test%")'],
-            [Schema::TYPE_STRING . '(32) CHECK (value LIKE "test%")', $this->string(32)->check('value LIKE "test%"'), 'varchar(32) CHECK (value LIKE "test%")'],
+            [Schema::TYPE_STRING . " CHECK (value LIKE 'test%')", $this->string()->check("value LIKE 'test%'"), "varchar(255) CHECK (value LIKE 'test%')"],
+            [Schema::TYPE_STRING . "(32) CHECK (value LIKE 'test%')", $this->string(32)->check("value LIKE 'test%'"), "varchar(32) CHECK (value LIKE 'test%')"],
             [Schema::TYPE_STRING . ' NOT NULL', $this->string()->notNull(), 'varchar(255) NOT NULL'],
             [Schema::TYPE_TEXT, $this->text(), 'text'],
             [Schema::TYPE_TEXT . '(255)', $this->text(), 'text', Schema::TYPE_TEXT],
             //-219	Wildcard matching may not be used with non-character types.
-            //[Schema::TYPE_TEXT . ' CHECK (value LIKE "test%")', $this->text()->check('value LIKE "test%"'), 'text CHECK (value LIKE "test%")'],
-            //[Schema::TYPE_TEXT . '(255) CHECK (value LIKE "test%")', $this->text()->check('value LIKE "test%"'), 'text CHECK (value LIKE "test%")', Schema::TYPE_TEXT . ' CHECK (value LIKE "test%")'],
+            //[Schema::TYPE_TEXT . ' CHECK (value LIKE "test%")', $this->text()->check("value LIKE 'test%'"), 'text CHECK (value LIKE "test%")'],
+            //[Schema::TYPE_TEXT . '(255) CHECK (value LIKE "test%")', $this->text()->check("value LIKE 'test%'"), 'text CHECK (value LIKE "test%")', Schema::TYPE_TEXT . ' CHECK (value LIKE "test%")'],
             [Schema::TYPE_TEXT . ' NOT NULL', $this->text()->notNull(), 'text NOT NULL'],
             [Schema::TYPE_TEXT . '(255) NOT NULL', $this->text()->notNull(), 'text NOT NULL', Schema::TYPE_TEXT . ' NOT NULL'],
             [Schema::TYPE_SMALLINT, $this->smallInteger(), 'smallint'],
@@ -112,8 +125,8 @@ class QueryBuilderTest extends \yiiunit\framework\db\QueryBuilderTest
     {
         $conditions = parent::conditionProvider();
 
-        $conditions[49] = [ ['in', ['id', 'name'], [['id' => 1, 'name' => 'foo'], ['id' => 2, 'name' => 'bar']]], '((id = :qp0 AND name = :qp1) OR (id = :qp2 AND name = :qp3))', [':qp0' => 1, ':qp1' => 'foo', ':qp2' => 2, ':qp3' => 'bar']];
-        $conditions[50] = [ ['not in', ['id', 'name'], [['id' => 1, 'name' => 'foo'], ['id' => 2, 'name' => 'bar']]], '((id != :qp0 OR name != :qp1) AND (id != :qp2 OR name != :qp3))', [':qp0' => 1, ':qp1' => 'foo', ':qp2' => 2, ':qp3' => 'bar']];
+        $conditions[49] = [ ['in', ['id', 'name'], [['id' => 1, 'name' => 'foo'], ['id' => 2, 'name' => 'bar']]], $this->replaceQuotes('((`id` = :qp0 AND `name` = :qp1) OR (`id` = :qp2 AND `name` = :qp3))'), [':qp0' => 1, ':qp1' => 'foo', ':qp2' => 2, ':qp3' => 'bar']];
+        $conditions[50] = [ ['not in', ['id', 'name'], [['id' => 1, 'name' => 'foo'], ['id' => 2, 'name' => 'bar']]], $this->replaceQuotes('((`id` != :qp0 OR `name` != :qp1) AND (`id` != :qp2 OR `name` != :qp3))'), [':qp0' => 1, ':qp1' => 'foo', ':qp2' => 2, ':qp3' => 'bar']];
 
         //Remove composite IN
         unset($conditions[51]);

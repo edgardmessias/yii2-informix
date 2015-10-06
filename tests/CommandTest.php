@@ -20,7 +20,11 @@ class CommandTest extends \yiiunit\framework\db\CommandTest
 
         $sql = 'SELECT [[id]], [[t.name]] FROM {{customer}} t';
         $command = $db->createCommand($sql);
-        $this->assertEquals("SELECT id, t.name FROM customer t", $command->sql);
+        if ($db->isDelimident()) {
+            $this->assertEquals('SELECT "id", "t"."name" FROM "customer" t', $command->sql);
+        } else {
+            $this->assertEquals("SELECT id, t.name FROM customer t", $command->sql);
+        }
     }
     
     public function testBindParamValue()
@@ -122,5 +126,25 @@ SQL;
         $this->assertEquals([
             'created_at' => date('Y'),
         ], $record);
+    }
+    
+    public function testCreateTable()
+    {
+        $db = $this->getConnection();
+        if ($db->isDelimident()) {
+            $db->createCommand('DROP TABLE IF EXISTS "testCreateTable";')->execute();
+        }
+
+        parent::testCreateTable();
+    }
+    
+    public function testAlterTable()
+    {
+        $db = $this->getConnection();
+        if ($db->isDelimident()) {
+            $db->createCommand('DROP TABLE IF EXISTS "testAlterTable";')->execute();
+        }
+        
+        parent::testAlterTable();
     }
 }
