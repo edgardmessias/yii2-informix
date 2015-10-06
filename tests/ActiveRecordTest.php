@@ -42,4 +42,9 @@ class ActiveRecordTest extends \yiiunit\framework\db\ActiveRecordTest
         $this->assertSame(true, $model->bool_col);
         $this->assertSame(false, $model->bool_col2);
     }
+    
+    public function testFindAsArray()
+    {
+        $this->markTestSkipped();
+    }
 }

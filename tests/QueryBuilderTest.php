@@ -42,7 +42,7 @@ class QueryBuilderTest extends \yiiunit\framework\db\QueryBuilderTest
      */
     protected function replaceQuotes($sql)
     {
-        if($this->getQueryBuilder()->db->isDelimident()){
+        if ($this->getQueryBuilder()->db->isDelimident()) {
             return str_replace('`', '"', $sql);
         }
         return str_replace('`', '', $sql);
