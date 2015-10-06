@@ -64,7 +64,7 @@ SQL;
         $blobCol = "\x10\x11\x12";
         $command->bindParam(':float_col', $floatCol);
         $command->bindParam(':numeric_col', $numericCol);
-        $command->bindParam(':blob_col', $blobCol, \PDO::PARAM_STR);
+        $command->bindParam(':blob_col', $blobCol, \PDO::PARAM_LOB, strlen($blobCol));
         
         $this->assertEquals(1, $command->execute());
 
