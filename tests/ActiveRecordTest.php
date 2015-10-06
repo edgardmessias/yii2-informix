@@ -47,4 +47,77 @@ class ActiveRecordTest extends \yiiunit\framework\db\ActiveRecordTest
     {
         $this->markTestSkipped();
     }
+    
+    public function testPopulateWithoutPk()
+    {
+        //CamelCase works if DELIMIDENT is enabled
+        if (\yiiunit\data\ar\Customer::$db->isDelimident()) {
+            parent::testPopulateWithoutPk();
+            return;
+        }
+        
+        // tests with single pk asArray
+        $aggregation = Customer::find()
+            ->select(['{{customer}}.[[status]]', 'SUM({{order}}.[[total]]) AS [[sumtotal]]'])
+            ->joinWith('ordersPlain', false)
+            ->groupBy('{{customer}}.[[status]]')
+            ->orderBy('status')
+            ->asArray()
+            ->all();
+
+        $expected = [
+            [
+                'status' => 1,
+                'sumtotal' => 183,
+            ],
+            [
+                'status' => 2,
+                'sumtotal' => 0,
+            ],
+        ];
+        $this->assertEquals($expected, $aggregation);
+
+        // tests with composite pk asArray
+        $aggregation = OrderItem::find()
+            ->select(['[[order_id]]', 'SUM([[subtotal]]) AS [[subtotal]]'])
+            ->joinWith('order', false)
+            ->groupBy('[[order_id]]')
+            ->orderBy('[[order_id]]')
+            ->asArray()
+            ->all();
+        $expected = [
+            [
+                'order_id' => 1,
+                'subtotal' => 70,
+            ],
+            [
+                'order_id' => 2,
+                'subtotal' => 33,
+            ],
+            [
+                'order_id' => 3,
+                'subtotal' => 40,
+            ],
+        ];
+        $this->assertEquals($expected, $aggregation);
+
+        // tests with composite pk with Models
+        $aggregation = OrderItem::find()
+            ->select(['[[order_id]]', 'SUM([[subtotal]]) AS [[subtotal]]'])
+            ->joinWith('order', false)
+            ->groupBy('[[order_id]]')
+            ->orderBy('[[order_id]]')
+            ->all();
+        $this->assertCount(3, $aggregation);
+        $this->assertContainsOnlyInstancesOf(OrderItem::className(), $aggregation);
+        foreach ($aggregation as $item) {
+            if ($item->order_id == 1) {
+                $this->assertEquals(70, $item->subtotal);
+            } elseif ($item->order_id == 2) {
+                $this->assertEquals(33, $item->subtotal);
+            } elseif ($item->order_id == 3) {
+                $this->assertEquals(40, $item->subtotal);
+            }
+        }
+    }
 }
