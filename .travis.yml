@@ -3,6 +3,10 @@ language: php
 php:
   - 5.4
 
+env:
+  - DELIMIDENT=n
+  - DELIMIDENT=y
+
 sudo: true
 
 before_install:
@@ -24,6 +28,7 @@ install:
   - travis_retry composer global require "fxp/composer-asset-plugin:~1.0.0" --prefer-dist --no-interaction
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - travis_retry composer install --prefer-dist --no-interaction
+  - sed -i "s/DELIMIDENT=\w/DELIMIDENT=${DELIMIDENT}/g" tests/data/config.php
 
 script:
   - phpunit
