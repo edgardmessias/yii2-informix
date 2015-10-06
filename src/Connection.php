@@ -43,6 +43,22 @@ class Connection extends \yii\db\Connection
     ];
     
     /**
+     * Creates a command for execution.
+     * @param string $sql the SQL statement to be executed
+     * @param array $params the parameters to be bound to the SQL statement
+     * @return Command the DB command
+     */
+    public function createCommand($sql = null, $params = [])
+    {
+        $command = new Command([
+            'db' => $this,
+            'sql' => $sql,
+        ]);
+
+        return $command->bindValues($params);
+    }
+
+    /**
      * Starts a transaction.
      * @param string|null $isolationLevel The isolation level to use for this transaction.
      * See [[Transaction::begin()]] for details.
