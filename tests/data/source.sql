@@ -103,7 +103,7 @@ CREATE TABLE type (
   char_col3 text,
   float_col double precision NOT NULL,
   float_col2 double precision DEFAULT 1.23,
-  blob_col blob,
+  blob_col clob,
   numeric_col decimal(5,2) DEFAULT 33.22,
   time DATETIME YEAR TO SECOND DEFAULT DATETIME(2002-01-01 00:00:00) YEAR TO SECOND NOT NULL,
   bool_col boolean NOT NULL,

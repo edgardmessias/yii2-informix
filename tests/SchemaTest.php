@@ -57,6 +57,9 @@ class SchemaTest extends \yiiunit\framework\db\SchemaTest
         $columns['float_col2']['size'] = null;
         $columns['float_col2']['precision'] = null;
         $columns['float_col2']['scale'] = null;
+        $columns['blob_col']['type'] = 'text';
+        $columns['blob_col']['dbType'] = 'clob';
+        $columns['blob_col']['phpType'] = 'string';
         $columns['time']['dbType'] = 'datetime year to second';
         $columns['time']['type'] = 'datetime';
         $columns['bool_col']['dbType'] = 'boolean';
