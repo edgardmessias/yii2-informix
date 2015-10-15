@@ -2,17 +2,24 @@ language: php
 
 php:
   - 5.4
+  - 5.5
+  - 5.6
 
 env:
-  - DELIMIDENT=n
-  - DELIMIDENT=y
+  - DELIMIDENT=n DOWNLOAD_VERSION=1210FC5de
+  - DELIMIDENT=y DOWNLOAD_VERSION=1210FC5de
+  - DELIMIDENT=n DOWNLOAD_VERSION=1170FC8de
+  - DELIMIDENT=y DOWNLOAD_VERSION=1170FC8de
+  - DELIMIDENT=n DOWNLOAD_VERSION=1150fc9de
+  - DELIMIDENT=y DOWNLOAD_VERSION=1150fc9de
 
 sudo: true
 
 before_install:
   - sudo apt-get update -qq 
   - sudo apt-get install aria2 curl -y
-  - DOWNLOAD_LINK=$(curl --url https://raw.githubusercontent.com/wiki/edgardmessias/informix-travis/informix-link-server.md -s | tail -1) ; echo ${DOWNLOAD_LINK} ; aria2c -x 16 ${DOWNLOAD_LINK} ; ls -l
+  - DOWNLOAD_LINK=$(phantomjs --ssl-protocol=tlsv1 ./tests/ci/travis/download.js | tail -1)
+  - aria2c -x 16 ${DOWNLOAD_LINK}
   - DOWNLOAD_FILE=$(ls iif*.tar)
   - sudo chmod +x ./tests/ci/travis/*.sh
   - sudo ./tests/ci/travis/informix_install.sh ${DOWNLOAD_FILE}
