@@ -16,4 +16,30 @@ trait DatabaseTestTrait
 
         parent::setUp();
     }
+    
+    public function prepareDatabase($config, $fixture, $open = true)
+    {
+        if (!isset($config['class'])) {
+            $config['class'] = 'yii\db\Connection';
+        }
+        /* @var $db \yii\db\Connection */
+        $db = \Yii::createObject($config);
+        if (!$open) {
+            return $db;
+        }
+        $db->open();
+        if ($fixture !== null) {
+            $lines = explode(';', file_get_contents($fixture));
+            foreach ($lines as $line) {
+                if (trim($line) !== '') {
+                    try {
+                        $db->pdo->exec($line);
+                    } catch (\Exception $e) {
+                        $this->markTestSkipped("Something wrong when preparing database: " . $e->getMessage() . "\nSQL: " . $line);
+                    }
+                }
+            }
+        }
+        return $db;
+    }
 }

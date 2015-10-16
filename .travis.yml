@@ -38,4 +38,4 @@ install:
   - sed -i "s/DELIMIDENT=\w/DELIMIDENT=${DELIMIDENT}/g" tests/data/config.php
 
 script:
-  - phpunit
+  - phpunit -v
