@@ -1,20 +1,20 @@
-DROP TABLE IF EXISTS composite_fk CASCADE;
-DROP TABLE IF EXISTS order_item CASCADE;
-DROP TABLE IF EXISTS item CASCADE;
-DROP TABLE IF EXISTS order_item_with_null_fk CASCADE;
-DROP TABLE IF EXISTS order CASCADE;
-DROP TABLE IF EXISTS order_with_null_fk CASCADE;
-DROP TABLE IF EXISTS category CASCADE;
-DROP TABLE IF EXISTS customer CASCADE;
-DROP TABLE IF EXISTS profile CASCADE;
-DROP TABLE IF EXISTS type CASCADE;
-DROP TABLE IF EXISTS null_values CASCADE;
-DROP TABLE IF EXISTS constraints CASCADE;
-DROP TABLE IF EXISTS bool_values CASCADE;
-DROP TABLE IF EXISTS animal CASCADE;
-DROP TABLE IF EXISTS default_pk CASCADE;
-DROP TABLE IF EXISTS document CASCADE;
-DROP VIEW IF EXISTS animal_view;
+DROP TABLE composite_fk CASCADE;
+DROP TABLE order_item CASCADE;
+DROP TABLE item CASCADE;
+DROP TABLE order_item_with_null_fk CASCADE;
+DROP TABLE order CASCADE;
+DROP TABLE order_with_null_fk CASCADE;
+DROP TABLE category CASCADE;
+DROP TABLE customer CASCADE;
+DROP TABLE profile CASCADE;
+DROP TABLE type CASCADE;
+DROP TABLE null_values CASCADE;
+DROP TABLE constraints CASCADE;
+DROP TABLE bool_values CASCADE;
+DROP TABLE animal CASCADE;
+DROP TABLE default_pk CASCADE;
+DROP TABLE document CASCADE;
+DROP VIEW animal_view;
 
 CREATE TABLE constraints
 (
@@ -82,14 +82,14 @@ CREATE TABLE composite_fk (
   order_id integer NOT NULL,
   item_id integer NOT NULL,
   PRIMARY KEY (id),
-  FOREIGN KEY (order_id, item_id) REFERENCES order_item (order_id, item_id) CONSTRAINT FK_composite_fk_order_item  ON DELETE CASCADE
+  FOREIGN KEY (order_id, item_id) REFERENCES order_item (order_id, item_id) ON DELETE CASCADE CONSTRAINT FK_composite_fk_order_item
 );
 
 CREATE TABLE null_values (
   id serial NOT NULL,
-  var1 INT NULL,
-  var2 INT NULL,
-  var3 INT DEFAULT NULL,
+  var1 integer,
+  var2 integer,
+  var3 integer DEFAULT NULL,
   stringcol VARCHAR(32) DEFAULT NULL,
   PRIMARY KEY (id)
 );
@@ -110,7 +110,7 @@ CREATE TABLE type (
   bool_col2 boolean DEFAULT 't',
   bool_col3 boolean DEFAULT 'f',
   ts_default DATETIME YEAR TO SECOND DEFAULT CURRENT YEAR TO SECOND NOT NULL,
-  bit_col SMALLINT NOT NULL DEFAULT 130
+  bit_col SMALLINT DEFAULT 130 NOT NULL
 );
 
 CREATE TABLE bool_values (
@@ -134,7 +134,7 @@ CREATE TABLE document (
   id serial primary key,
   title varchar(255) not null,
   content text not null,
-  version integer not null default 0
+  version integer default 0 not null
 );
 
 CREATE VIEW animal_view AS SELECT * FROM animal;
@@ -187,8 +187,8 @@ INSERT INTO document (title, content, version) VALUES ('Yii 2.0 guide', 'This is
  * (Postgres-)Database Schema for validator tests
  */
 
-DROP TABLE IF EXISTS validator_main CASCADE;
-DROP TABLE IF EXISTS validator_ref CASCADE;
+DROP TABLE validator_main CASCADE;
+DROP TABLE validator_ref CASCADE;
 
 CREATE TABLE validator_main (
   id integer not null primary key,
@@ -214,7 +214,7 @@ INSERT INTO validator_ref (id, a_field, ref) VALUES (6, 'ref_to_5', 5);
 
 /* bit test, see https://github.com/yiisoft/yii2/issues/9006 */
 
-DROP TABLE IF EXISTS bit_values CASCADE;
+DROP TABLE bit_values CASCADE;
 
 CREATE TABLE bit_values (
   id serial not null primary key,

@@ -31,11 +31,14 @@ trait DatabaseTestTrait
         if ($fixture !== null) {
             $lines = explode(';', file_get_contents($fixture));
             foreach ($lines as $line) {
-                if (trim($line) !== '') {
+                $line = trim($line);
+                if ($line !== '') {
                     try {
                         $db->pdo->exec($line);
                     } catch (\Exception $e) {
-                        $this->markTestSkipped("Something wrong when preparing database: " . $e->getMessage() . "\nSQL: " . $line);
+                        if (stripos($line, 'DROP') === false) {
+                            $this->markTestSkipped("Something wrong when preparing database: " . $e->getMessage() . "\nSQL: " . $line);
+                        }
                     }
                 }
             }

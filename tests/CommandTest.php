@@ -2,6 +2,7 @@
 
 namespace edgardmessias\unit\db\informix;
 
+use edgardmessias\db\informix\Schema;
 use yii\db\Expression;
 
 /**
@@ -131,20 +132,39 @@ SQL;
     public function testCreateTable()
     {
         $db = $this->getConnection();
-        if ($db->isDelimident()) {
-            $db->createCommand('DROP TABLE IF EXISTS "testCreateTable";')->execute();
+        
+        try {
+            $db->createCommand()->dropTable('testCreateTable')->execute();
+        } catch (\Exception $ex) {
         }
 
-        parent::testCreateTable();
+        $db->createCommand()->createTable('testCreateTable', ['id' => Schema::TYPE_PK, 'bar' => Schema::TYPE_INTEGER])->execute();
+        $db->createCommand()->insert('testCreateTable', ['bar' => 1])->execute();
+        $records = $db->createCommand('SELECT [[id]], [[bar]] FROM {{testCreateTable}};')->queryAll();
+        $this->assertEquals([
+            ['id' => 1, 'bar' => 1],
+        ], $records);
     }
     
     public function testAlterTable()
     {
         $db = $this->getConnection();
-        if ($db->isDelimident()) {
-            $db->createCommand('DROP TABLE IF EXISTS "testAlterTable";')->execute();
+
+        try {
+            $db->createCommand()->dropTable('testAlterTable')->execute();
+        } catch (\Exception $ex) {
         }
-        
-        parent::testAlterTable();
+
+        $db->createCommand()->createTable('testAlterTable', ['id' => Schema::TYPE_PK, 'bar' => Schema::TYPE_INTEGER])->execute();
+        $db->createCommand()->insert('testAlterTable', ['bar' => 1])->execute();
+
+        $db->createCommand()->alterColumn('testAlterTable', 'bar', Schema::TYPE_STRING)->execute();
+
+        $db->createCommand()->insert('testAlterTable', ['bar' => 'hello'])->execute();
+        $records = $db->createCommand('SELECT [[id]], [[bar]] FROM {{testAlterTable}};')->queryAll();
+        $this->assertEquals([
+            ['id' => 1, 'bar' => 1],
+            ['id' => 2, 'bar' => 'hello'],
+        ], $records);
     }
 }
