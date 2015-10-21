@@ -50,7 +50,7 @@ class QueryBuilder extends \yii\db\QueryBuilder
      * parameters to be bound to the SQL statement (the second array element). The parameters returned
      * include those provided in `$params`.
      */
-    public function build($query, $params = array())
+    public function build($query, $params = [])
     {
         list($sql, $params) = parent::build($query, $params);
         
