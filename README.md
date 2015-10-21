@@ -16,7 +16,7 @@ Requirements
  * Informix Database Server 11.50 or greater
 
 Unsupported
-------------
+-----------
 
 Functions not supported by the Informix database:
 
@@ -60,4 +60,31 @@ return [
         ],
     ],
 ];
+```
+
+To use CamelCase column names or aliases, enable the DELIMIDENT:
+
+Example:
+
+```php
+    //....
+    'db' => [
+        'class'    => 'edgardmessias\db\informix\Connection',
+        'dsn'      => 'informix:host=127.0.0.1;service=9088;database=test;server=dev;protocol=onsoctcp;CLIENT_LOCALE=en_US.utf8;DB_LOCALE=en_US.utf8;EnableScrollableCursors=1;DELIMIDENT=y',
+        'username' => 'username',
+        'password' => 'password',
+    ],
+```
+
+Or:
+
+```php
+    //....
+    'db' => [
+        'class'        => 'edgardmessias\db\informix\Connection',
+        'dsn'          => 'informix:DSN_NAME', //WITH DELIMIDENT ENABLED
+        'isDelimident' => true,
+        'username'     => 'username',
+        'password'     => 'password',
+    ],
 ```
