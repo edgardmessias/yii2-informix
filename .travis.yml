@@ -18,8 +18,8 @@ sudo: true
 before_install:
   - sudo apt-get update -qq 
   - sudo apt-get install aria2 curl -y
-  - DOWNLOAD_LINK=$(phantomjs --ssl-protocol=tlsv1 ./tests/ci/travis/download.js | tail -1)
-  - aria2c -x 16 ${DOWNLOAD_LINK}
+  - travis_retry export DOWNLOAD_LINK=$(phantomjs --ssl-protocol=tlsv1 ./tests/ci/travis/download.js | tail -1 | grep http)
+  - travis_retry aria2c -x 16 ${DOWNLOAD_LINK}
   - DOWNLOAD_FILE=$(ls iif*.tar)
   - sudo chmod +x ./tests/ci/travis/*.sh
   - sudo ./tests/ci/travis/informix_install.sh ${DOWNLOAD_FILE}
