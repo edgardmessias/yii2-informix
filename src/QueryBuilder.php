@@ -298,45 +298,6 @@ class QueryBuilder extends \yii\db\QueryBuilder
     }
 
     /**
-     * Builds a SQL statement for enabling or disabling integrity check.
-     * @param boolean $check whether to turn on or off the integrity check.
-     * @param string $schema the schema of the tables. Defaults to empty string, meaning the current or default schema.
-     * @param string $table the table name. Defaults to empty string, meaning that no table will be changed.
-     * @return string the SQL statement for checking integrity
-     * @throws NotSupportedException if this is not supported by the underlying DBMS
-     */
-    public function checkIntegrity($check = true, $schema = '', $table = '')
-    {
-        $enabled = $check ? 'ENABLED' : 'DISABLED';
-        if ($table) {
-            return  "SET CONSTRAINTS FOR " . $this->db->quoteTableName($table) . " {$enabled};";
-        } else {
-            $sql = "SELECT TRIM(constrname) FROM sysconstraints"
-                    . " WHERE tabid >= 100";
-            if ($schema !== '') {
-                $sql .= " AND owner=:schema";
-            }
-            
-            $command = $this->db->createCommand($sql);
-            if ($schema !== '') {
-                $command->bindValue(':schema', $schema);
-            }
-            $constraints = $command->queryColumn();
-
-            if(empty($constraints)){
-                return '';
-            }
-            
-            $quotedConstraints = [];
-            foreach ($constraints as $constraint) {
-                $quotedConstraints[] = $this->db->quoteTableName($constraint);
-            }
-            
-            return  "SET CONSTRAINTS " . implode(",", $quotedConstraints) . " {$enabled};";
-        }
-    }
-        
-    /**
      * Builds the ORDER BY and LIMIT/OFFSET clauses and appends them to the given SQL.
      * @param string $sql the existing SQL (without ORDER BY/LIMIT/OFFSET)
      * @param array $orderBy the order by columns. See [[Query::orderBy]] for more details on how to specify this parameter.

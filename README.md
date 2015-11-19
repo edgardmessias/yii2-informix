@@ -17,6 +17,7 @@ Requirements
 
 Unsupported
 -----------
+ * Enable/Disable checkIntegrity (Bug with PHP)
 
 Functions not supported by the Informix database:
 
