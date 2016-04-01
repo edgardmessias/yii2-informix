@@ -32,8 +32,9 @@ GROUP_NAME="${USER_NAME}"
 GROUP_GID=200
 
 # Delete downloaded data including packages
-DO_CLEANUP="NO"
+DO_CLEANUP="YES"
 
+IFX_DISABLE_IPV6=yes
 
 ##
 ## Changing lines below at your own risk!
@@ -106,7 +107,7 @@ echo ">>>    Upgrading OS and installing dependencies for Informix ${IFXDB_VERSI
 #myfatal $? "apt-get upgrade failed"
 apt-get install -qy apt-utils adduser file sudo
 myfatal $? "apt-get install apt-utils adduser file"
-apt-get install -qy libaio1 bc pdksh libncurses5 ncurses-bin libpam0g
+apt-get install -qy libaio1 bc pdksh libncurses5 libncurses5-dev ncurses-bin libpam0g
 myfatal $? "apt-get dependencies failed"
 
 echo ">>>    Create group and user for Informix"
@@ -123,7 +124,7 @@ fi
 groupadd "${GROUP_NAME}" -g "${GROUP_GID}" >/dev/null
 myfatal $? "Adding group ${GROUP_NAME} ID:${GROUP_GID} failed"
 
-useradd ${USER_ADD_CREATE_HOME} -d "${USER_HOME}" -g "${GROUP_NAME}" -u "${USER_UID}" "${USER_NAME}"  >/dev/null
+useradd ${USER_ADD_CREATE_HOME} -d "${USER_HOME}" -g "${GROUP_NAME}" -u "${USER_UID}" -s /bin/bash "${USER_NAME}"  >/dev/null
 myfatal $? "Adding user ${USER_NAME} ID:${USER_UID} HOME:${USER_HOME} failed"
 
 adduser "${USER_NAME}" sudo  >/dev/null
@@ -190,6 +191,10 @@ sed -i "s#DEF_TABLE_LOCKMODE page#DEF_TABLE_LOCKMODE row#g"                "${ON
 sed -i "s#TAPEDEV .*#TAPEDEV   ${DATA_DIR}/backup/datas#g"                 "${ONCONFIG_PATH}"
 sed -i "s#LTAPEDEV .*#LTAPEDEV ${DATA_DIR}/backup/logs#g"                  "${ONCONFIG_PATH}"
 sed -i 's#^SBSPACENAME.*#SBSPACENAME sbspace#g'                            "${ONCONFIG_PATH}"
+sed -i 's#^ROOTSIZE.*#ROOTSIZE 2500000#g'                                  "${ONCONFIG_PATH}"
+sed -i 's#^PHYSFILE.*#PHYSFILE 1000000#g'                                  "${ONCONFIG_PATH}"
+sed -i 's#^LOGSIZE.*#LOGSIZE 200000#g'                                     "${ONCONFIG_PATH}"
+sed -i 's#^NETTYPE.*#NETTYPE soctcp,1,50,NET#g'                            "${ONCONFIG_PATH}"
 
 cat "${ONCONFIG_PATH}"
 chown "${USER_NAME}:" "${ONCONFIG_PATH}"
@@ -199,9 +204,11 @@ sed -i 's#^BACKUPLOGS.*#BACKUPLOGS=Y#g'              "${ALARMPROGRAM_PATH}"
 sed -i 's#^BACKUP_CMD.*#BACKUP_CMD="ontape -a -d"#g' "${ALARMPROGRAM_PATH}"
 cat "${ALARMPROGRAM_PATH}"
 
+touch "${INSTALL_DIR}"/etc/IFX_DISABLE_IPV6
+
 echo ">>>    Postconfig sqlhost ..."
 if [ ! `grep onsoctcp "${SQLHOSTS_PATH}" | wc -l` -ne 0 ] ; then
-	echo "${INSTANCE_NAME}        onsoctcp        *               sqlexec" >> "${SQLHOSTS_PATH}"
+	echo "${INSTANCE_NAME}        onsoctcp        localhost               sqlexec" >> "${SQLHOSTS_PATH}"
 fi
 chown "${USER_NAME}:" "${SQLHOSTS_PATH}"
 
@@ -222,7 +229,7 @@ export DB_LOCALE=en_US.utf8
 export DBDATE=Y4MD-
 export DBDELIMITER='|';
 export PATH=\${INFORMIXDIR}/bin:\${INFORMIXDIR}/lib:\${INFORMIXDIR}/lib/esql:\${PATH}
-export LD_LIBRARY_PATH=\${INFORMIXDIR}/lib:\$INFORMIXDIR/lib/esql:\$INFORMIXDIR/lib/tools
+export LD_LIBRARY_PATH=\${INFORMIXDIR}/lib:\${INFORMIXDIR}/lib/esql:\${INFORMIXDIR}/lib/tools
 export PS1="IDS-${IFXDB_VERSION} ${INSTANCE_NAME}: "
 export MSGPATH=""${DATA_DIR}"/logs/informix.log"
 EOF

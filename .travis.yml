@@ -6,8 +6,8 @@ php:
   - 5.6
 
 env:
-  - DELIMIDENT=n DOWNLOAD_VERSION=1210FC5de
-  - DELIMIDENT=y DOWNLOAD_VERSION=1210FC5de
+  - DELIMIDENT=n DOWNLOAD_VERSION=1210FC6de
+  - DELIMIDENT=y DOWNLOAD_VERSION=1210FC6de
   - DELIMIDENT=n DOWNLOAD_VERSION=1170FC8de
   - DELIMIDENT=y DOWNLOAD_VERSION=1170FC8de
   - DELIMIDENT=n DOWNLOAD_VERSION=1150fc9de
@@ -32,9 +32,11 @@ install:
   - echo "extension=pdo_informix.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - php -m | grep -i pdo
   - travis_retry composer self-update && composer --version
-  - travis_retry composer global require "fxp/composer-asset-plugin:~1.0.0" --prefer-dist --no-interaction
+  - travis_retry composer global require "fxp/composer-asset-plugin:~1.1.3" --prefer-dist --no-interaction
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
   - travis_retry composer install --prefer-dist --no-interaction
+  - rm vendor/yiisoft/yii2-dev -Rf
+  - travis_retry composer install --prefer-source -o --no-interaction
   - sed -i "s/DELIMIDENT=\w/DELIMIDENT=${DELIMIDENT}/g" tests/data/config.php
 
 script:

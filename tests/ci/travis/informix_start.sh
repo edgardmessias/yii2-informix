@@ -25,6 +25,8 @@ export MYINFORMIX_DBSPACE="dbs_root"
 source "${INFORMIX_HOME}/.bashrc"
 source "${INFORMIX_HOME}/ifx_dev.env"
 
+IFX_DISABLE_IPV6=yes
+
 if [ ! -e "${INFORMIX_DATA_DIR}/.initialized" ] ; then
 	echo ">>>    Create data directory structure in ${INFORMIX_DATA_DIR} (ifx initialization)"
 	mkdir -p "${INFORMIX_DATA_DIR}"/logs
@@ -41,11 +43,13 @@ if [ ! -e "${INFORMIX_DATA_DIR}/.initialized" ] ; then
 
 	# Initialize shared memmory and data structure
 	# and kill server
+    echo ">>>    Initializing the IBM Informix Database (${INFORMIXSERVER}) ... "
 	oninit -iy && touch "${INFORMIX_DATA_DIR}/.initialized"
-	onspaces -c -S sbspace -p "${INFORMIX_DATA_DIR}"/spaces/sbspace -o 0 -s 2000
+    echo ">>>    Adding sbspace in IBM Informix Database (${INFORMIXSERVER}) ... "
+	onspaces -c -S sbspace -p "${INFORMIX_DATA_DIR}"/spaces/sbspace -o 0 -s 20000
+    echo ">>>    Stopping up the IBM Informix Database (${INFORMIXSERVER}) ... "
 	onmode -ky
 fi
-
 
 DB_NAME=${DB_NAME:-test}
 DB_USER=${DB_USER:-test}
