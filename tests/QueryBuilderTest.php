@@ -43,9 +43,9 @@ class QueryBuilderTest extends \yiiunit\framework\db\QueryBuilderTest
     protected function replaceQuotes($sql)
     {
         if ($this->getQueryBuilder()->db->isDelimident()) {
-            return str_replace('`', '"', $sql);
+            return str_replace(['[[', ']]'], '"', $sql);
         }
-        return str_replace('`', '', $sql);
+        return str_replace(['[[', ']]'], '', $sql);
     }
 
     /**
@@ -125,12 +125,12 @@ class QueryBuilderTest extends \yiiunit\framework\db\QueryBuilderTest
     {
         $conditions = parent::conditionProvider();
 
-        $conditions[49] = [ ['in', ['id', 'name'], [['id' => 1, 'name' => 'foo'], ['id' => 2, 'name' => 'bar']]], $this->replaceQuotes('((`id` = :qp0 AND `name` = :qp1) OR (`id` = :qp2 AND `name` = :qp3))'), [':qp0' => 1, ':qp1' => 'foo', ':qp2' => 2, ':qp3' => 'bar']];
-        $conditions[50] = [ ['not in', ['id', 'name'], [['id' => 1, 'name' => 'foo'], ['id' => 2, 'name' => 'bar']]], $this->replaceQuotes('((`id` != :qp0 OR `name` != :qp1) AND (`id` != :qp2 OR `name` != :qp3))'), [':qp0' => 1, ':qp1' => 'foo', ':qp2' => 2, ':qp3' => 'bar']];
+        $conditions[53] = [ ['in', ['id', 'name'], [['id' => 1, 'name' => 'foo'], ['id' => 2, 'name' => 'bar']]], $this->replaceQuotes('(([[id]] = :qp0 AND [[name]] = :qp1) OR ([[id]] = :qp2 AND [[name]] = :qp3))'), [':qp0' => 1, ':qp1' => 'foo', ':qp2' => 2, ':qp3' => 'bar']];
+        $conditions[54] = [ ['not in', ['id', 'name'], [['id' => 1, 'name' => 'foo'], ['id' => 2, 'name' => 'bar']]], $this->replaceQuotes('(([[id]] != :qp0 OR [[name]] != :qp1) AND ([[id]] != :qp2 OR [[name]] != :qp3))'), [':qp0' => 1, ':qp1' => 'foo', ':qp2' => 2, ':qp3' => 'bar']];
 
         //Remove composite IN
-        unset($conditions[51]);
-        unset($conditions[52]);
+        unset($conditions[55]);
+        unset($conditions[56]);
 
         return $conditions;
     }
