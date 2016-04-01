@@ -15,6 +15,17 @@ class ConnectionTest extends \yiiunit\framework\db\ConnectionTest
 
     protected $driverName = 'informix';
     
+    public function testSerialize()
+    {
+        $connection = $this->getConnection(false, false);
+        $connection->open();
+        $serialized = serialize($connection);
+        $unserialized = unserialize($serialized);
+        $this->assertInstanceOf('yii\db\Connection', $unserialized);
+
+        $this->assertEquals(123, $unserialized->createCommand("SELECT 123 FROM systables WHERE tabid = 1")->queryScalar());
+    }
+
     public function testQuoteTableName()
     {
         $connection = $this->getConnection(false);
