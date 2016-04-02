@@ -4,6 +4,8 @@ php:
   - 5.4
   - 5.5
   - 5.6
+  - 7.0
+  - nightly
 
 env:
   - DELIMIDENT=n DOWNLOAD_VERSION=1210FC6de
@@ -12,6 +14,12 @@ env:
   - DELIMIDENT=y DOWNLOAD_VERSION=1170FC8de
   - DELIMIDENT=n DOWNLOAD_VERSION=1150fc9de
   - DELIMIDENT=y DOWNLOAD_VERSION=1150fc9de
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - php: 7.0
+    - php: nightly
 
 sudo: true
 
