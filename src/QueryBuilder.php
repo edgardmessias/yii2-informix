@@ -8,7 +8,9 @@
 
 namespace edgardmessias\db\informix;
 
+use yii\base\InvalidParamException;
 use yii\base\NotSupportedException;
+use yii\db\Expression;
 use yii\db\Query;
 
 /**
@@ -52,7 +54,45 @@ class QueryBuilder extends \yii\db\QueryBuilder
      */
     public function build($query, $params = [])
     {
-        list($sql, $params) = parent::build($query, $params);
+        $query = $query->prepare($this);
+
+        $params = empty($params) ? $query->params : array_merge($params, $query->params);
+
+        $clauses = [
+            $this->buildSelect($query->select, $params, $query->distinct, $query->selectOption),
+            $this->buildFrom($query->from, $params),
+            $this->buildJoin($query->join, $params),
+            $this->buildWhere($query->where, $params),
+            $this->buildGroupBy($query->groupBy),
+            $this->buildHaving($query->having, $params),
+        ];
+
+        $sql = implode($this->separator, array_filter($clauses));
+        $sql = $this->buildOrderByAndLimit($sql, $query->orderBy, $query->limit, $query->offset);
+
+        if (!empty($query->orderBy)) {
+            foreach ($query->orderBy as $expression) {
+                if ($expression instanceof Expression) {
+                    $params = array_merge($params, $expression->params);
+                }
+            }
+        }
+        if (!empty($query->groupBy)) {
+            foreach ($query->groupBy as $expression) {
+                if ($expression instanceof Expression) {
+                    $params = array_merge($params, $expression->params);
+                }
+            }
+        }
+
+        $union = $this->buildUnion($query->union, $params);
+        if ($union !== '') {
+            $prefix = '';
+            if($query->limit || $query->offset){
+                $prefix = "SELECT * FROM ";
+            }
+            $sql = "$prefix($sql){$this->separator}$union";
+        }
         
         foreach ($params as $k => $v) {
             if (is_bool($v)) {
@@ -324,6 +364,35 @@ class QueryBuilder extends \yii\db\QueryBuilder
         return $sql;
     }
 
+
+    /**
+     * @param array $unions
+     * @param array $params the binding parameters to be populated
+     * @return string the UNION clause built from [[Query::$union]].
+     */
+    public function buildUnion($unions, &$params)
+    {
+        if (empty($unions)) {
+            return '';
+        }
+
+        $result = '';
+
+        foreach ($unions as $i => $union) {
+            $query = $union['query'];
+            $prefix = '';
+            if ($query instanceof Query) {
+                if($query->limit || $query->offset){
+                    $prefix = 'SELECT * FROM ';
+                }
+                list($unions[$i]['query'], $params) = $this->build($query, $params);
+            }
+
+            $result .= 'UNION ' . ($union['all'] ? 'ALL ' : '') . $prefix . '( ' . $unions[$i]['query'] . ' ) ';
+        }
+
+        return trim($result);
+    }
 
     /**
      * Builds SQL for IN condition
