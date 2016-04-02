@@ -92,6 +92,15 @@ SQL;
         $this->assertEquals('user5@example.com', $command->queryScalar());
     }
 
+    /**
+     * Test whether param binding works in other places than WHERE
+     * @dataProvider paramsNonWhereProvider
+     */
+    public function testBindParamsNonWhere($sql)
+    {
+        $this->markTestSkipped("the pdo_informix does not support param binding in other places than WHERE.");
+    }
+
     public function testBatchInsert()
     {
         $command = $this->getConnection()->createCommand();
