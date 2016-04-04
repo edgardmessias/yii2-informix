@@ -21,9 +21,7 @@ matrix:
     - php: 7.0
     - php: nightly
 
-sudo: required
-
-dist: trusty
+sudo: true
 
 before_install:
   - sudo apt-get update -qq 
