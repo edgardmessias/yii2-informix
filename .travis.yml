@@ -9,14 +9,16 @@ php:
 
 env:
   - DELIMIDENT=n DOWNLOAD_VERSION=1210FC6de
-  - DELIMIDENT=y DOWNLOAD_VERSION=1210FC6de
-  - DELIMIDENT=n DOWNLOAD_VERSION=1170FC8de
-  - DELIMIDENT=y DOWNLOAD_VERSION=1170FC8de
-  - DELIMIDENT=n DOWNLOAD_VERSION=1150fc9de
-  - DELIMIDENT=y DOWNLOAD_VERSION=1150fc9de
 
 matrix:
   fast_finish: true
+  include:
+    - php: 5.6
+      env: DELIMIDENT=y DOWNLOAD_VERSION=1210FC6de
+    - php: 5.6
+      env: DELIMIDENT=n DOWNLOAD_VERSION=1170FC8de
+    - php: 5.6
+      env: DELIMIDENT=n DOWNLOAD_VERSION=1150fc9de
   allow_failures:
     - php: 7.0
     - php: nightly
