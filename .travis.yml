@@ -8,46 +8,71 @@ php:
   - nightly
 
 env:
-  - DELIMIDENT=n DOWNLOAD_VERSION=1210FC6de
+  - DELIMIDENT=n DOWNLOAD_VERSION=1210FC6de DOWNLOAD_FILE=iif.12.10.FC6DE.linux-x86_64.tar
 
 matrix:
   fast_finish: true
   include:
     - php: 5.6
-      env: DELIMIDENT=y DOWNLOAD_VERSION=1210FC6de
+      env: DELIMIDENT=y DOWNLOAD_VERSION=1210FC6de DOWNLOAD_FILE=iif.12.10.FC6DE.linux-x86_64.tar
     - php: 5.6
-      env: DELIMIDENT=n DOWNLOAD_VERSION=1170FC8de
+      env: DELIMIDENT=n DOWNLOAD_VERSION=1170FC8de DOWNLOAD_FILE=iif.11.70.FC8DE.linux-x86_64.tar
     - php: 5.6
-      env: DELIMIDENT=n DOWNLOAD_VERSION=1150fc9de
+      env: DELIMIDENT=n DOWNLOAD_VERSION=1150fc9de DOWNLOAD_FILE=iif.11.50.FC9DE.linux-x86_64.tar
   allow_failures:
     - php: 7.0
     - php: nightly
 
 sudo: true
 
+# cache composer dirs
+cache:
+  directories:
+    - $HOME/.composer/cache
+    - $HOME/download
+
 before_install:
+  # Parallel download
   - sudo apt-get update -qq 
   - sudo apt-get install aria2 curl -y
-  - travis_retry export DOWNLOAD_LINK=$(phantomjs --ssl-protocol=tlsv1 ./tests/ci/travis/download.js | tail -1 | grep http)
-  - travis_retry aria2c -x 16 ${DOWNLOAD_LINK}
-  - DOWNLOAD_FILE=$(ls iif*.tar)
-  - sudo chmod +x ./tests/ci/travis/*.sh
-  - sudo ./tests/ci/travis/informix_install.sh ${DOWNLOAD_FILE}
-  - sudo ./tests/ci/travis/informix_start.sh
+
+  # INSTALL
+  # Retrieves and extracts the Informix binaries
+  - if [ ! -d $HOME/download ]; then mkdir $HOME/download; fi
+  - if [ ! -f $HOME/download/${DOWNLOAD_FILE} ]; then travis_retry export DOWNLOAD_LINK=$(phantomjs --ssl-protocol=tlsv1 ${TRAVIS_BUILD_DIR}/tests/ci/travis/download.js | tail -1 | grep http); fi
+  - if [ ! -f $HOME/download/${DOWNLOAD_FILE} ]; then travis_retry aria2c -x 16 -d $HOME/download -o ${DOWNLOAD_FILE} ${DOWNLOAD_LINK}; fi
+  - cp $HOME/download/${DOWNLOAD_FILE} /tmp
+  - cd /tmp
+  - sudo chmod +x ${TRAVIS_BUILD_DIR}/tests/ci/travis/*.sh
+  # Install Informix Database
+  - sudo ${TRAVIS_BUILD_DIR}/tests/ci/travis/informix_install.sh ${DOWNLOAD_FILE}
+  # Start and create Informix Database
+  - sudo ${TRAVIS_BUILD_DIR}/tests/ci/travis/informix_start.sh
   - export INFORMIXDIR=/opt/IBM/informix
+
+  # Install pdo_informix
   - git clone https://git.php.net/repository/pecl/database/pdo_informix.git
   - (cd pdo_informix/; phpize && ./configure --with-pdo-informix=${INFORMIXDIR} && make && sudo make install)
 
 install:
+  - cd ${TRAVIS_BUILD_DIR}
+  # enabling pdo_ibm
   - echo "extension=pdo_informix.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - php -m | grep -i pdo
+  - php -r "echo phpversion('pdo_informixp');"
+
+  # preparing Yii2 environment
   - travis_retry composer self-update && composer --version
   - travis_retry composer global require "fxp/composer-asset-plugin:~1.1.3" --prefer-dist --no-interaction
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
+
+  # installing composer dependency
   - travis_retry composer install --prefer-dist --no-interaction
+  # needed to use tests of Yii2
   - rm vendor/yiisoft/yii2-dev -Rf
   - travis_retry composer install --prefer-source -o --no-interaction
+
   - sed -i "s/DELIMIDENT=\w/DELIMIDENT=${DELIMIDENT}/g" tests/data/config.php
 
 script:
-  - phpunit -v
+  - vendor/bin/phpunit --verbose
