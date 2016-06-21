@@ -51,7 +51,8 @@ before_install:
   - export INFORMIXDIR=/opt/IBM/informix
 
   # Install pdo_informix
-  - git clone https://git.php.net/repository/pecl/database/pdo_informix.git
+  - mkdir pdo_informix
+  - (cd pdo_informix/; wget https://pecl.php.net/get/PDO_INFORMIX -O pdo_informix.tgz && tar -xvf pdo_informix.tgz --strip 1)
   - (cd pdo_informix/; phpize && ./configure --with-pdo-informix=${INFORMIXDIR} && make && sudo make install)
 
 install:
