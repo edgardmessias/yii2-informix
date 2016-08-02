@@ -25,9 +25,10 @@ matrix:
     - php: nightly
       env: DELIMIDENT=n DOWNLOAD_VERSION=1210FC6de PDO_VERSION=latest
   allow_failures:
-    - php: 7.0
-    - php: nightly
-    - env: PDO_VERSION=latest
+    - php: 
+      - 7.0
+      - nightly
+    - env: DELIMIDENT=n DOWNLOAD_VERSION=1210FC6de PDO_VERSION=latest
 
 sudo: true
 
