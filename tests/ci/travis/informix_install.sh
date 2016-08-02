@@ -66,19 +66,19 @@ fi
 
 case "${ARCHIVE_PATH}" in
 
-	*11.50*)
+	*11.50*|*1150*)
 		IFXDB_VERSION="11.50"
 		BUNDLE_FILE=bundle.ini
 		IFX_INSTALL_ARGS="-silent -acceptlicense=yes -debug -disable-checks -log install_log.txt"
 		;;
 
-	*11.70*) 
+	*11.70*|*1170*) 
 		IFXDB_VERSION="11.70"
 		BUNDLE_FILE=bundle.properties
 		IFX_INSTALL_ARGS="-i silent -f ${UNPACK_DIR}/${BUNDLE_FILE} -DLICENSE_ACCEPTED=TRUE"
 		;;
 
-	*12.10*)
+	*12.10*|*1210*)
 		IFXDB_VERSION="12.10"
 		BUNDLE_FILE=bundle.properties
 		IFX_INSTALL_ARGS="-i silent -f ${UNPACK_DIR}/${BUNDLE_FILE} -DLICENSE_ACCEPTED=TRUE"
