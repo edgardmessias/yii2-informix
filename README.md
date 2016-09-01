@@ -1,5 +1,9 @@
 Informix Extension for Yii 2 (yii2-informix)
 ============================================
+[![Latest Stable Version](https://poser.pugx.org/edgardmessias/yii2-informix/v/stable)](https://packagist.org/packages/edgardmessias/yii2-informix)
+[![Total Downloads](https://poser.pugx.org/edgardmessias/yii2-informix/downloads)](https://packagist.org/packages/edgardmessias/yii2-informix)
+[![Latest Unstable Version](https://poser.pugx.org/edgardmessias/yii2-informix/v/unstable)](https://packagist.org/packages/edgardmessias/yii2-informix)
+[![License](https://poser.pugx.org/edgardmessias/yii2-informix/license)](https://packagist.org/packages/edgardmessias/yii2-informix)
 
 This extension adds [Informix](https://www-01.ibm.com/software/data/informix/) database engine extension for the [Yii framework 2.0](http://www.yiiframework.com).
 
