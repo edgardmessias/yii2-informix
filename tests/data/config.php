@@ -15,6 +15,10 @@ $config = [
             'fixture'  => __DIR__ . '/source.sql',
         ]
     ],
+    'aliases' => [
+        '@bower' => '@vendor/bower-asset',
+        '@npm'   => '@vendor/npm-asset',
+    ],
 ];
 
 if (is_file(__DIR__ . '/config.local.php')) {
