@@ -39,7 +39,7 @@ cache:
     - $HOME/.composer/cache
 
 before_install:
-  - apt-get update
+  - sudo apt-get update -qq
 
   # Run the Informix docker image
   - docker network create testnetwork
