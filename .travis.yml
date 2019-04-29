@@ -73,7 +73,7 @@ install:
   - export PATH="$HOME/.composer/vendor/bin:$PATH"
 
   # installing composer dependency
-  - travis_retry composer install --prefer-dist --no-interaction
+  - travis_retry composer update --prefer-dist --no-interaction
   # needed to use tests of Yii2
   - rm vendor/yiisoft/yii2-dev -Rf
   - travis_retry composer install --prefer-source -o --no-interaction
