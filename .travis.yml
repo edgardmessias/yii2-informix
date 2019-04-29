@@ -49,9 +49,9 @@ before_install:
   - docker run --network=testnetwork -e CHECK_PORT=27017 -e CHECK_HOST=ifx giorgos/takis
 
   # Run the post-install script to add the sbspace and the test DB
-  - docker cp ${TRAVIS_BUILD_DIR}/post-install.sh ifx:/home/informix/post-install.sh
-  - docker exec -u root ifx bash -c "chmod +x /home/informix/post-install.sh"
-  - docker exec ifx bash -c "/home/informix/post-install.sh"
+  - docker cp ${TRAVIS_BUILD_DIR}/ci/travis/post_install.sh ifx:/home/informix/post_install.sh
+  - docker exec -u root ifx bash -c "chmod +x /home/informix/post_install.sh"
+  - docker exec ifx bash -c "/home/informix/post_install.sh"
 
   # Copy the required Informix libraries for the PDO extension into the host
   - mkdir -p /opt/ibm
