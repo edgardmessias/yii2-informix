@@ -5,6 +5,9 @@ php:
   - 5.5
   - 5.6
 
+services:
+  - docker
+
 env:
   - DELIMIDENT=n DOWNLOAD_VERSION=1210FC6de PDO_VERSION=1.3.1
   - DELIMIDENT=n DOWNLOAD_VERSION=1210FC6de PDO_VERSION=latest
@@ -37,24 +40,22 @@ cache:
     - $HOME/download
 
 before_install:
-  # Parallel download
-  - sudo apt-get update -qq
-  - sudo apt-get install aria2 curl -y
+  # Run the Informix docker image
+  - docker network create testnetwork
+  - docker run -td --network=testnetwork --name ifx --privileged -p 9088:9088 -e "LICENSE=accept" -e "DB_LOCALE=en_US.utf8" -e "CLIENT_LOCALE=en_US.utf8" -e "DBMONEY=Y4MD-" -e "DBDELIMITER='|'" ibmcom/informix-innovator-c:${IFX_VERSION}
 
-  # INSTALL
-  - DOWNLOAD_FILE=iif.${DOWNLOAD_VERSION}.linux-x86_64.tar
-  # Retrieves and extracts the Informix binaries
-  - if [ ! -d $HOME/download ]; then mkdir $HOME/download; fi
-  - if [ ! -f $HOME/download/${DOWNLOAD_FILE} ]; then travis_retry export DOWNLOAD_LINK=$(phantomjs --ssl-protocol=tlsv1 ${TRAVIS_BUILD_DIR}/tests/ci/travis/download.js | tail -1 | grep http); fi
-  - if [ ! -f $HOME/download/${DOWNLOAD_FILE} ]; then travis_retry aria2c -x 16 -d $HOME/download -o ${DOWNLOAD_FILE} ${DOWNLOAD_LINK}; fi
-  - cp $HOME/download/${DOWNLOAD_FILE} /tmp
-  - cd /tmp
-  - sudo chmod +x ${TRAVIS_BUILD_DIR}/tests/ci/travis/*.sh
-  # Install Informix Database
-  - sudo ${TRAVIS_BUILD_DIR}/tests/ci/travis/informix_install.sh ${DOWNLOAD_FILE}
-  # Start and create Informix Database
-  - sudo ${TRAVIS_BUILD_DIR}/tests/ci/travis/informix_start.sh
-  - export INFORMIXDIR=/opt/IBM/informix
+  # Use takis to wait until the Informix DB initialization has finished
+  - docker run --network=testnetwork -e CHECK_PORT=27017 -e CHECK_HOST=ifx giorgos/takis
+
+  # Run the post-install script to add the sbspace and the test DB
+  - docker cp ${TRAVIS_BUILD_DIR}/post-install.sh ifx:/home/informix/post-install.sh
+  - docker exec -u root ifx bash -c "chmod +x /home/informix/post-install.sh"
+  - docker exec ifx bash -c "/home/informix/post-install.sh"
+
+  # Copy the required Informix libraries for the PDO extension into the host
+  - mkdir -p /opt/ibm
+  - docker cp ifx:/opt/ibm/informix /opt/ibm/informix
+  - export INFORMIXDIR=/opt/ibm/informix
 
   # Install pdo_informix
   - mkdir pdo_informix
@@ -63,12 +64,6 @@ before_install:
   - (cd pdo_informix/; phpize && ./configure --with-pdo-informix=${INFORMIXDIR} && make && sudo make install)
 
 install:
-  - cd ${TRAVIS_BUILD_DIR}
-  # enabling pdo_ibm
-  - echo "extension=pdo_informix.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  - php -m | grep -i pdo
-  - php -r "echo phpversion('pdo_informixp');"
-
   # preparing Yii2 environment
   - travis_retry composer self-update && composer --version
   - travis_retry composer global require "fxp/composer-asset-plugin:~1.1.3" --prefer-dist --no-interaction
