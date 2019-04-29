@@ -1,22 +1,22 @@
 language: php
 
 php:
-  - "5.4"
-  - "5.5"
+#  - "5.4"
+#  - "5.5"
   - "5.6"
 
 services:
   - docker
 
 env:
-  - DELIMIDENT=n DOWNLOAD_VERSION=1210FC6de PDO_VERSION=1.3.1
-  - DELIMIDENT=n DOWNLOAD_VERSION=1210FC6de PDO_VERSION=latest
+#  - DELIMIDENT=n DOWNLOAD_VERSION=1210FC6de PDO_VERSION=1.3.1
+  - DELIMIDENT=n DOWNLOAD_VERSION=12.10.FC12W1IE PDO_VERSION=latest
 
-matrix:
-  fast_finish: true
-  include:
-    - php: "5.6"
-      env: DELIMIDENT=y DOWNLOAD_VERSION=1210FC6de PDO_VERSION=1.3.1
+#matrix:
+#  fast_finish: true
+#  include:
+#    - php: "5.6"
+#      env: DELIMIDENT=y DOWNLOAD_VERSION=1210FC6de PDO_VERSION=1.3.1
 #    - php: 5.6
 #      env: DELIMIDENT=n DOWNLOAD_VERSION=1170FC8de PDO_VERSION=1.3.1
 #    - php: 5.6
