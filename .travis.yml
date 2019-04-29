@@ -37,9 +37,10 @@ matrix:
 cache:
   directories:
     - $HOME/.composer/cache
-    - $HOME/download
 
 before_install:
+  - sudo apt-get update -qq
+
   # Run the Informix docker image
   - docker network create testnetwork
   - docker run -td --network=testnetwork --name ifx --privileged -p 9088:9088 -e "LICENSE=accept" -e "DB_LOCALE=en_US.utf8" -e "CLIENT_LOCALE=en_US.utf8" -e "DBMONEY=Y4MD-" -e "DBDELIMITER='|'" ibmcom/informix-innovator-c:${IFX_VERSION}
@@ -57,11 +58,14 @@ before_install:
   - docker cp ifx:/opt/ibm/informix /opt/ibm/informix
   - export INFORMIXDIR=/opt/ibm/informix
 
-  # Install pdo_informix
+  # Compile and enable the Informix PDO extension
   - mkdir pdo_informix
   - if [ $PDO_VERSION = 'latest' ]; then export PDO_LINK="https://pecl.php.net/get/PDO_INFORMIX"; else export PDO_LINK="https://pecl.php.net/get/PDO_INFORMIX-${PDO_VERSION}.tgz"; fi
   - (cd pdo_informix/; wget $PDO_LINK -O pdo_informix.tgz && tar -xvf pdo_informix.tgz --strip 1)
   - (cd pdo_informix/; phpize && ./configure --with-pdo-informix=${INFORMIXDIR} && make && sudo make install)
+  - echo "extension=pdo_informix.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - php -m | grep -i pdo
+  - php -r "echo phpversion('pdo_informix'), PHP_EOL;"
 
 install:
   # preparing Yii2 environment
@@ -77,18 +81,18 @@ install:
 
   - sed -i "s/DELIMIDENT=\w/DELIMIDENT=${DELIMIDENT}/g" tests/data/config.php
 
-before_script:
-  - |
-    if [ $TRAVIS_PHP_VERSION = '5.6' ] && [ $DELIMIDENT = 'n' ] && [ $DOWNLOAD_VERSION = '1210FC6de' ]; then
-      PHPUNIT_FLAGS="--coverage-clover=coverage.clover"
-    fi
+#before_script:
+#  - |
+#    if [ $TRAVIS_PHP_VERSION = '5.6' ] && [ $DELIMIDENT = 'n' ] && [ $DOWNLOAD_VERSION = '1210FC6de' ]; then
+#      PHPUNIT_FLAGS="--coverage-clover=coverage.clover"
+#    fi
 
 script:
   - vendor/bin/phpunit --verbose $PHPUNIT_FLAGS
 
-after_script:
-  - |
-    if [ $TRAVIS_PHP_VERSION = '5.6' ] && [ $DELIMIDENT = 'n' ] && [ $DOWNLOAD_VERSION = '1210FC6de' ] && [ $PDO_VERSION = '1.3.1' ]; then
-      travis_retry wget https://scrutinizer-ci.com/ocular.phar
-      php ocular.phar code-coverage:upload --format=php-clover coverage.clover
-    fi
+#after_script:
+#  - |
+#    if [ $TRAVIS_PHP_VERSION = '5.6' ] && [ $DELIMIDENT = 'n' ] && [ $DOWNLOAD_VERSION = '1210FC6de' ] && [ $PDO_VERSION = '1.3.1' ]; then
+#      travis_retry wget https://scrutinizer-ci.com/ocular.phar
+#      php ocular.phar code-coverage:upload --format=php-clover coverage.clover
+#    fi
