@@ -9,11 +9,15 @@ $config = [
     'databases' => [
         'informix' => [
             'class'    => '\edgardmessias\db\informix\Connection',
-            'dsn'      => 'informix:host=127.0.0.1;service=9088;database=test;server=dev;protocol=onsoctcp;CLIENT_LOCALE=en_US.utf8;DB_LOCALE=en_US.utf8;EnableScrollableCursors=1;CursorBehavior=1;DELIMIDENT=y',
-            'username' => 'test',
-            'password' => 'test',
+            'dsn'      => 'informix:host=localhost;service=9088;database=test;server=informix;protocol=onsoctcp;CLIENT_LOCALE=en_US.utf8;DB_LOCALE=en_US.utf8;EnableScrollableCursors=1;CursorBehavior=1;DELIMIDENT=y',
+            'username' => 'informix',
+            'password' => 'in4mix',
             'fixture'  => __DIR__ . '/source.sql',
         ]
+    ],
+    'aliases' => [
+        '@bower' => '@vendor/bower-asset',
+        '@npm'   => '@vendor/npm-asset',
     ],
 ];
 
