@@ -153,7 +153,7 @@ class QueryBuilder extends \yii\db\QueryBuilder
      * @param array $rows the rows to be batch inserted into the table
      * @return string the batch INSERT SQL statement
      */
-    public function batchInsert($table, $columns, $rows)
+    public function batchInsert($table, $columns, $rows, &$params = []))
     {
         $schema = $this->db->getSchema();
         if (($tableSchema = $schema->getTableSchema($table)) !== null) {
